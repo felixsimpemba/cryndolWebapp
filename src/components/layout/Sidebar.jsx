@@ -50,7 +50,7 @@ const Sidebar = () => {
         width: sidebarCollapsed ? '80px' : '260px',
       }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="h-screen glass border-r border-slate-200 dark:border-white/10 flex flex-col sticky top-0"
+      className="h-[100dvh] glass border-r border-slate-200 dark:border-white/10 flex flex-col sticky top-0"
     >
       {/* Logo */}
       <div className="p-6 border-b border-slate-200 dark:border-white/10">
@@ -94,8 +94,8 @@ const Sidebar = () => {
           const isActive = location.pathname === item.path;
 
           return (
-            <Link 
-              key={item.path} 
+            <Link
+              key={item.path}
               to={item.path}
               onClick={() => useUIStore.getState().setMobileMenuOpen(false)}
             >
@@ -152,8 +152,7 @@ const Sidebar = () => {
           className={cn(
             'w-full flex items-center px-3 py-3 rounded-lg transition-all duration-200',
             sidebarCollapsed && 'justify-center',
-            sidebarCollapsed && 'justify-center',
-            'text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-gray-200'
+            'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-300'
           )}
         >
           <LogOut size={20} />

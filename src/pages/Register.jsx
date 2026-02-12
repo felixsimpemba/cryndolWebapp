@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, UserPlus, Phone, ArrowLeft, RefreshCw, KeyRound, DollarSign } from 'lucide-react';
+import { Mail, Lock, User, UserPlus, Phone, ArrowLeft, RefreshCw, KeyRound, DollarSign, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -19,6 +19,8 @@ const Register = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState('register'); // 'register' | 'verify'
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Registration Form State
   const [formData, setFormData] = useState({
@@ -294,12 +296,21 @@ const Register = () => {
                 <div>
                   <Input
                     label="Password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     error={errors.password}
                     leftIcon={<Lock size={18} />}
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="pointer-events-auto focus:outline-none text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    }
                     required
                   />
                   {formData.password && (
@@ -317,12 +328,21 @@ const Register = () => {
                 </div>
                 <Input
                   label="Confirm Password"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="password_confirmation"
                   value={formData.password_confirmation}
                   onChange={handleChange}
                   error={errors.password_confirmation}
                   leftIcon={<Lock size={18} />}
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="pointer-events-auto focus:outline-none text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  }
                   required
                 />
 

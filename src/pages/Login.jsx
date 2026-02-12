@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -18,6 +18,7 @@ const Login = () => {
   const logo = theme === 'dark' ? logoDark : logoLight;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -46,8 +47,6 @@ const Login = () => {
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
     return newErrors;
   };
@@ -135,13 +134,22 @@ const Login = () => {
 
             <Input
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
               error={errors.password}
               leftIcon={<Lock size={18} />}
+              rightIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="pointer-events-auto focus:outline-none text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              }
               required
             />
 
