@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, DollarSign, Calendar, Percent, User, Package, PlusCircle } from 'lucide-react';
+import { X, DollarSign, Calendar, Percent, User, Package, PlusCircle, Camera, Image, Trash2 } from 'lucide-react';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { handleApiError } from '../../utils/errorHandler';
@@ -24,7 +24,10 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
     termMonths: '',
     term_unit: 'months',
     startDate: new Date().toISOString().split('T')[0],
-    status: 'pending'
+    status: 'pending',
+    collateral_name: '',
+    collateral_description: '',
+    collateral_photos: []
   });
   const [errors, setErrors] = useState({});
   const [estimatedDueDate, setEstimatedDueDate] = useState('');
@@ -42,7 +45,10 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
         termMonths: '',
         term_unit: 'months',
         startDate: new Date().toISOString().split('T')[0],
-        status: 'pending'
+        status: 'pending',
+        collateral_name: '',
+        collateral_description: '',
+        collateral_photos: []
       });
       setErrors({});
     }
@@ -125,12 +131,38 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFormData((prev) => ({
+      ...prev,
+      collateral_photos: [...prev.collateral_photos, ...files]
+    }));
+  };
+
+  const removePhoto = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      collateral_photos: prev.collateral_photos.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await loanService.createLoan(formData);
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'collateral_photos') {
+          formData.collateral_photos.forEach(file => {
+            data.append('collateral_photos[]', file);
+          });
+        } else {
+          data.append(key, formData[key]);
+        }
+      });
+
+      await loanService.createLoan(data);
       toast.success('Loan created successfully');
       onSuccess?.();
       onClose();
@@ -311,6 +343,68 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                   </div>
                 )}
+
+                {/* Collateral Section */}
+                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-4">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
+                    <Package size={16} className="text-primary-500" />
+                    Collateral Details
+                  </h3>
+
+                  <Input
+                    label="Collateral Name"
+                    name="collateral_name"
+                    placeholder="e.g. Toyota Vitz, HP Laptop..."
+                    value={formData.collateral_name}
+                    onChange={handleChange}
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Description</label>
+                    <textarea
+                      name="collateral_description"
+                      value={formData.collateral_description}
+                      onChange={handleChange}
+                      rows="2"
+                      className="block w-full px-4 py-2.5 rounded-lg transition-all duration-200 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none hover:border-slate-400 dark:hover:border-slate-600"
+                      placeholder="Condition, serial numbers, color..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Collateral Photos</label>
+                    <div className="flex flex-wrap gap-3">
+                      {formData.collateral_photos?.map((file, index) => (
+                        <div key={index} className="relative w-20 h-20 group">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Preview ${index}`}
+                            className="w-full h-full object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(index)}
+                            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
+
+                      <label className="w-20 h-20 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 cursor-pointer transition-colors text-slate-400 hover:text-emerald-500">
+                        <Camera size={24} />
+                        <span className="text-[10px] mt-1 font-medium">Add Photo</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="border-t border-slate-200 dark:border-slate-800 pt-5 mt-2 flex justify-end gap-3">
                   <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>

@@ -100,11 +100,11 @@ class AuthService {
    */
   async refreshToken() {
     const refreshToken = localStorage.getItem('refreshToken');
-    const response = await api.post('/auth/refresh', { refresh_token: refreshToken });
-    const { token } = response.data;
+    const response = await api.post('/auth/refresh', { refreshToken: refreshToken });
+    const { accessToken } = response.data.data;
 
-    localStorage.setItem('token', token);
-    return token;
+    localStorage.setItem('token', accessToken);
+    return accessToken;
   }
 
   /**

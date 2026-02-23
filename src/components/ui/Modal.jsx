@@ -35,15 +35,15 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md', showCloseButton 
               className={cn('w-full', sizes[size])}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="glass rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+              <div className="glass rounded-2xl shadow-2xl border border-white/10 dark:border-slate-800 overflow-hidden">
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-                    {title && <h2 className="text-xl font-bold text-gray-100">{title}</h2>}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur">
+                    {title && <h2 className="text-xl font-bold text-slate-900 dark:text-gray-100">{title}</h2>}
                     {showCloseButton && (
                       <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-200 transition-colors p-1 hover:bg-white/10 rounded-lg"
+                        className="text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg"
                       >
                         <X size={20} />
                       </button>

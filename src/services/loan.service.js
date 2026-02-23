@@ -21,7 +21,10 @@ class LoanService {
    * Create new loan
    */
   async createLoan(data) {
-    const response = await api.post('/loans', data);
+    const isFormData = data instanceof FormData;
+    const response = await api.post('/loans', data, {
+      headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : {}
+    });
     return response.data;
   }
 
@@ -29,6 +32,16 @@ class LoanService {
    * Update loan
    */
   async updateLoan(id, data) {
+    const isFormData = data instanceof FormData;
+    // Laravel bug: PUT doesn't handle multipart/form-data natively.
+    // Use POST with _method=PUT
+    if (isFormData) {
+      data.append('_method', 'PUT');
+      const response = await api.post(`/loans/${id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    }
     const response = await api.put(`/loans/${id}`, data);
     return response.data;
   }

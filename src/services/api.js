@@ -37,20 +37,20 @@ api.interceptors.response.use(
     // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       // Try to refresh token
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refresh_token: refreshToken,
+            refreshToken: refreshToken,
           });
-          
-          const { token } = response.data;
-          localStorage.setItem('token', token);
-          
+
+          const { accessToken } = response.data.data;
+          localStorage.setItem('token', accessToken);
+
           // Retry original request
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
@@ -65,7 +65,7 @@ api.interceptors.response.use(
 
     // Handle other errors
     const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
-    
+
     // Don't show toast for 401 errors (handled above) or 422 validation errors (handled in forms)
     if (error.response?.status !== 401 && error.response?.status !== 422) {
       toast.error(errorMessage);

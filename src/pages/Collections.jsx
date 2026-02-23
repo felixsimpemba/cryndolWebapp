@@ -4,25 +4,35 @@ import { AlertCircle, Calendar, CheckCircle, Clock } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
 import loanService from '../services/loan.service';
+import dashboardService from '../services/dashboard.service';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
 const Collections = () => {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [summary, setSummary] = useState(null);
 
     useEffect(() => {
-        fetchCollections();
+        fetchData();
     }, []);
 
-    const fetchCollections = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            // In a real app, this would filter by 'active' or 'overdue' statuses specifically
-            const response = await loanService.getLoans({ status: 'active' });
-            setLoans(response.data.data || []);
+            const user = JSON.parse(localStorage.getItem('user'));
+            const businessId = user?.businessProfile?.id || user?.id;
+
+            // Fetch summary and loans in parallel
+            const [summaryData, loansResponse] = await Promise.all([
+                dashboardService.getSummary(businessId),
+                loanService.getLoans({ status: 'active' })
+            ]);
+
+            setSummary(summaryData);
+            setLoans(loansResponse.data.data || []);
         } catch (error) {
-            console.error('Failed to fetch collections:', error);
+            console.error('Failed to fetch collections data:', error);
             toast.error('Failed to load collections');
         } finally {
             setLoading(false);
@@ -43,7 +53,7 @@ const Collections = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-slate-500 dark:text-gray-400">Overdue Amount</p>
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(0)}</h3>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary?.overdueAmount || 0)}</h3>
                                 </div>
                             </div>
                         </Card.Content>
@@ -56,7 +66,7 @@ const Collections = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-slate-500 dark:text-gray-400">Due This Week</p>
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(0)}</h3>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary?.dueThisWeekAmount || 0)}</h3>
                                 </div>
                             </div>
                         </Card.Content>
@@ -69,7 +79,7 @@ const Collections = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-slate-500 dark:text-gray-400">Collected Today</p>
-                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(0)}</h3>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary?.collectedToday || 0)}</h3>
                                 </div>
                             </div>
                         </Card.Content>

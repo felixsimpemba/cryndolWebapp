@@ -167,26 +167,26 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass rounded-2xl w-full max-w-2xl border border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="glass rounded-2xl w-full max-w-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/10">
-                <h2 className="text-2xl font-bold text-gray-100">{customer ? 'Edit Customer' : 'Add Customer'}</h2>
-                <button onClick={handleClose} className="p-2 hover:bg-white/10 rounded-lg text-gray-400">
+              <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur sticky top-0 z-10">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100">{customer ? 'Edit Customer' : 'Add Customer'}</h2>
+                <button onClick={handleClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200 transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
               {/* Tabs */}
-              <div className="flex border-b border-white/10 px-6">
+              <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 bg-white/30 dark:bg-slate-900/30 backdrop-blur sticky top-[81px] z-10">
                 {tabs.map(tab => (
                   <button
                     key={tab.id}
                     onClick={() => !tab.disabled && setActiveTab(tab.id)}
                     disabled={tab.disabled}
                     className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
-                      ? 'border-emerald-500 text-emerald-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                      ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                       } ${tab.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {tab.label}
@@ -198,7 +198,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                 {activeTab === 'documents' ? (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-slate-200">Customer Documents</h3>
+                      <h3 className="text-lg font-medium text-slate-900 dark:text-slate-200">Customer Documents</h3>
                       <div className="relative">
                         <input
                           type="file"
@@ -208,7 +208,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                         />
                         <label
                           htmlFor="doc-upload"
-                          className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 cursor-pointer transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-500/20 cursor-pointer transition-colors"
                         >
                           <Upload size={18} />
                           Upload
@@ -219,17 +219,17 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                     <div className="space-y-2">
                       {documents.length > 0 ? (
                         documents.map(doc => (
-                          <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+                          <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                             <div className="flex items-center gap-3">
                               <FileText className="text-slate-400" size={20} />
                               <div>
-                                <p className="text-sm font-medium text-slate-200">{doc.original_name}</p>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{doc.original_name}</p>
                                 <p className="text-xs text-slate-500 uppercase">{doc.document_type}</p>
                               </div>
                             </div>
                             <button
                               onClick={() => handleDeleteDocument(doc.id)}
-                              className="p-2 text-red-400 hover:bg-red-500/10 rounded-lg"
+                              className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -257,16 +257,16 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                         <Input label="TPIN" name="tpin_number" value={formData.tpin_number} onChange={handleChange} error={errors.tpin_number} />
                         <Input label="Date of Birth" name="date_of_birth" type="date" value={formData.date_of_birth} onChange={handleChange} error={errors.date_of_birth} />
                         <div>
-                          <label className="block text-sm font-medium text-slate-300 mb-1">Gender</label>
-                          <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none">
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+                          <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                             <option value="">Select Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-slate-300 mb-1">Employment</label>
-                          <select name="employment_status" value={formData.employment_status} onChange={handleChange} className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none">
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Employment</label>
+                          <select name="employment_status" value={formData.employment_status} onChange={handleChange} className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
                             <option value="">Select Status</option>
                             <option value="employed">Employed</option>
                             <option value="self_employed">Self Employed</option>
@@ -277,7 +277,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
                       <Button type="button" variant="ghost" onClick={handleClose} disabled={isLoading}>Cancel</Button>
                       <Button type="submit" variant="primary" isLoading={isLoading}>{customer ? 'Update' : 'Create'}</Button>
                     </div>

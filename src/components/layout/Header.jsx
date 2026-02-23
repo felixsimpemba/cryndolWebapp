@@ -26,16 +26,16 @@ const Header = ({ title }) => {
           {/* Right: Actions */}
           <div className="flex items-center space-x-4">
             {/* Search (future enhancement) */}
-            <button className="hidden md:flex items-center space-x-2 px-4 py-2 glass-hover rounded-lg transition-colors">
+            {/* <button className="hidden md:flex items-center space-x-2 px-4 py-2 glass-hover rounded-lg transition-colors">
               <Search size={18} className="text-slate-500 dark:text-gray-400" />
               <span className="text-sm text-slate-500 dark:text-gray-400">Search...</span>
-            </button>
+            </button> */}
 
             {/* Notifications */}
-            <button className="relative p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors">
-              <Bell size={20} className="text-slate-500 dark:text-gray-400" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            {/* <button className="relative p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+                <Bell size={20} className="text-slate-500 dark:text-gray-400" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button> */}
 
             {/* Theme Toggle */}
             <ThemeToggle />

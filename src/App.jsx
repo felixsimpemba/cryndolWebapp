@@ -53,7 +53,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/delete-account" element={<DeleteAccount />} />
+            <Route path="/deleteaccount" element={<DeleteAccount />} />
 
             {/* Protected Routes */}
             <Route

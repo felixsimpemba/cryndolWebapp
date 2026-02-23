@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, DollarSign, Calendar, Clock, AlertTriangle, FileText, ChevronRight, Plus, Download, Mail } from 'lucide-react';
+import { X, Check, DollarSign, Calendar, Clock, AlertTriangle, FileText, ChevronRight, Plus, Download, Mail, Camera, Package } from 'lucide-react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -174,12 +174,12 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col md:flex-row">
 
                             {/* Sidebar / Tabs (Desktop) */}
-                            <div className="w-full md:w-64 border-r border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 p-4 space-y-2">
+                            <div className="w-full md:w-64 border-r border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-slate-900/50 p-4 space-y-2">
                                 <button
                                     onClick={() => setActiveTab('overview')}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'overview'
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/5'
+                                        ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200/50 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <FileText size={18} /> Overview
@@ -187,8 +187,8 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                 <button
                                     onClick={() => setActiveTab('schedule')}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'schedule'
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/5'
+                                        ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200/50 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <Calendar size={18} /> Repayment Schedule
@@ -196,11 +196,20 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                 <button
                                     onClick={() => setActiveTab('transactions')}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'transactions'
-                                        ? 'bg-emerald-500 text-white'
-                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/5'
+                                        ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200/50 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <DollarSign size={18} /> Payments
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('collateral')}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'collateral'
+                                        ? 'bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                        : 'text-slate-600 dark:text-gray-300 hover:bg-slate-200/50 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <Package size={18} /> Collateral
                                 </button>
                             </div>
 
@@ -215,13 +224,13 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             <Card>
                                                 <div className="p-4">
-                                                    <p className="text-sm text-slate-500">Principal</p>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400">Principal</p>
                                                     <p className="text-xl font-bold text-slate-900 dark:text-white">{formatCurrency(loan.principal)}</p>
                                                 </div>
                                             </Card>
                                             <Card>
                                                 <div className="p-4">
-                                                    <p className="text-sm text-slate-500">Term</p>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400">Term</p>
                                                     <p className="text-xl font-bold text-slate-900 dark:text-white">
                                                         {loan.termMonths} <span className="capitalize text-sm">{loan.term_unit || 'months'}</span>
                                                     </p>
@@ -229,13 +238,13 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                             </Card>
                                             <Card>
                                                 <div className="p-4">
-                                                    <p className="text-sm text-slate-500">Due Date</p>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400">Due Date</p>
                                                     <p className="text-lg font-bold text-slate-900 dark:text-white">{formatDate(loan.dueDate)}</p>
                                                 </div>
                                             </Card>
                                             <Card>
                                                 <div className="p-4">
-                                                    <p className="text-sm text-slate-500">est. Profit</p>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400">est. Profit</p>
                                                     <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                                                         {formatCurrency(aggregates.totalDue - loan.principal)}
                                                     </p>
@@ -248,8 +257,8 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Repayment Progress</h3>
                                             <div className="flex items-end justify-between mb-2">
                                                 <div>
-                                                    <p className="text-3xl font-bold text-emerald-500">{formatCurrency(aggregates.totalPaid)}</p>
-                                                    <p className="text-sm text-slate-500">Paid so far</p>
+                                                    <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-500">{formatCurrency(aggregates.totalPaid)}</p>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400">Paid so far</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-lg font-medium text-slate-700 dark:text-gray-300">of {formatCurrency(aggregates.totalDue)}</p>
@@ -263,7 +272,7 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                                 ></div>
                                             </div>
                                             <div className="flex justify-between mt-2">
-                                                <p className="text-sm text-slate-500">Outstanding Balance:</p>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400">Outstanding Balance:</p>
                                                 <p className="text-sm font-bold text-red-500">{formatCurrency(aggregates.balance)}</p>
                                             </div>
                                         </div>
@@ -311,14 +320,14 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                                 <tbody>
                                                     {loan.payments && loan.payments.length > 0 ? (
                                                         loan.payments.sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map((payment) => (
-                                                            <tr key={payment.id} className="bg-white border-b dark:bg-slate-900 dark:border-slate-800">
-                                                                <td className="px-4 py-3">{formatDate(payment.scheduledDate)}</td>
-                                                                <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{formatCurrency(payment.amountScheduled)}</td>
-                                                                <td className="px-4 py-3 text-emerald-600">{formatCurrency(payment.amountPaid)}</td>
+                                                            <tr key={payment.id} className="bg-white border-b border-slate-100 dark:bg-slate-900 dark:border-slate-800">
+                                                                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{formatDate(payment.scheduledDate)}</td>
+                                                                <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{formatCurrency(payment.amountScheduled)}</td>
+                                                                <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(payment.amountPaid)}</td>
                                                                 <td className="px-4 py-3">
-                                                                    <span className={`px-2 py-1 rounded-full text-xs border ${payment.status === 'paid' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
-                                                                        payment.status === 'overdue' ? 'bg-red-100 text-red-800 border-red-200' :
-                                                                            'bg-slate-100 text-slate-800 border-slate-200'
+                                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' :
+                                                                        payment.status === 'overdue' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' :
+                                                                            'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                                                                         }`}>
                                                                         {payment.status}
                                                                     </span>
@@ -408,7 +417,7 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                                             </div>
                                                             <div>
                                                                 <p className="font-semibold text-slate-900 dark:text-white">Payment Received</p>
-                                                                <p className="text-xs text-slate-500">{formatDate(payment.paidDate)}</p>
+                                                                <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(payment.paidDate)}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
@@ -421,6 +430,66 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                                 <p className="text-center py-8 text-slate-500">No payments recorded yet.</p>
                                             )}
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* COLLATERAL TAB */}
+                                {activeTab === 'collateral' && (
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Collateral Information</h3>
+                                        </div>
+
+                                        {loan.collateral ? (
+                                            <div className="space-y-6">
+                                                <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-white/10">
+                                                    <div className="flex items-start gap-4">
+                                                        <div className="w-12 h-12 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400">
+                                                            <Package size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">{loan.collateral.name}</h4>
+                                                            <p className="text-sm text-slate-500 mt-1">{loan.collateral.description || 'No description provided.'}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {loan.collateral.photos && loan.collateral.photos.length > 0 && (
+                                                    <div>
+                                                        <h4 className="text-sm font-semibold text-slate-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                                                            <Camera size={16} /> Collateral Photos
+                                                        </h4>
+                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                            {loan.collateral.photos.map((photo, index) => {
+                                                                const photoUrl = photo.startsWith('http') ? photo : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '')}/storage/${photo}`;
+                                                                return (
+                                                                    <div key={index} className="relative aspect-square group overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+                                                                        <img
+                                                                            src={photoUrl}
+                                                                            alt={`Collateral ${index + 1}`}
+                                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                                        />
+                                                                        <a
+                                                                            href={photoUrl}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                                                                        >
+                                                                            <span className="text-xs font-medium">View Full Size</span>
+                                                                        </a>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-12 bg-slate-50 dark:bg-slate-800 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                                                <Package size={48} className="mx-auto text-slate-300 mb-4" />
+                                                <p className="text-slate-500">No collateral information recorded for this loan.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

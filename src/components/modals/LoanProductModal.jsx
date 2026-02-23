@@ -79,7 +79,7 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
-    
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -95,7 +95,7 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
       } else {
         await loanProductService.createProduct(formData);
       }
-      
+
       onSuccess?.();
     } catch (error) {
       const { message, fieldErrors, isValidation } = handleApiError(error);
@@ -126,14 +126,14 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass rounded-2xl w-full max-w-2xl border border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar"
+              className="glass rounded-2xl w-full max-w-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-6 border-b border-white/10 sticky top-0 bg-[#0f172a]/95 backdrop-blur z-10">
-                <h2 className="text-2xl font-bold text-gray-100">
+              <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-[#0f172a]/95 backdrop-blur sticky top-0 z-10">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-gray-100">
                   {product ? 'Edit Loan Product' : 'Create Loan Product'}
                 </h2>
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-gray-200">
+                <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200">
                   <X size={20} />
                 </button>
               </div>
@@ -168,13 +168,13 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider border-t border-white/10 pt-4">Term & Interest</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Interest Type</label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Interest Type</label>
                       <select
                         name="interest_type"
                         value={formData.interest_type}
                         onChange={handleChange}
-                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                       >
                         <option value="flat">Flat Rate</option>
                         <option value="reducing_balance">Reducing Balance</option>
@@ -192,7 +192,7 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                       leftIcon={<Percent size={18} />}
                       required
                     />
-                     <Input
+                    <Input
                       label="Min Amount"
                       name="min_amount"
                       type="number"
@@ -210,7 +210,7 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                       error={errors.max_amount}
                       required
                     />
-                     <Input
+                    <Input
                       label="Min Term"
                       name="min_term"
                       type="number"
@@ -228,28 +228,28 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                       error={errors.max_term}
                       required
                     />
-                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Term Unit</label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Term Unit</label>
                       <select
                         name="term_unit"
                         value={formData.term_unit}
                         onChange={handleChange}
-                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                       >
                         <option value="days">Days</option>
                         <option value="weeks">Weeks</option>
                         <option value="months">Months</option>
                       </select>
                     </div>
-                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Repayment Freq</label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Repayment Freq</label>
                       <select
                         name="repayment_frequency"
                         value={formData.repayment_frequency}
                         onChange={handleChange}
-                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                       >
-                         <option value="weekly">Weekly</option>
+                        <option value="weekly">Weekly</option>
                         <option value="bi_weekly">Bi-Weekly</option>
                         <option value="monthly">Monthly</option>
                       </select>
@@ -257,17 +257,17 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                   </div>
                 </div>
 
-                 {/* Fees */}
+                {/* Fees */}
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider border-t border-white/10 pt-4">Fees & Penalties</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Process Fee Type</label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Process Fee Type</label>
                       <select
                         name="processing_fee_type"
                         value={formData.processing_fee_type}
                         onChange={handleChange}
-                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                       >
                         <option value="fixed">Fixed Amount</option>
                         <option value="percentage">Percentage</option>
@@ -282,13 +282,13 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                       onChange={handleChange}
                       error={errors.processing_fee_value}
                     />
-                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Penalty Type</label>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Penalty Type</label>
                       <select
                         name="late_penalty_type"
                         value={formData.late_penalty_type}
                         onChange={handleChange}
-                        className="w-full bg-slate-800/50 border border-slate-700 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                        className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
                       >
                         <option value="fixed">Fixed Amount</option>
                         <option value="percentage">Percentage</option>
@@ -306,7 +306,7 @@ const LoanProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-white/10">
                   <Button type="button" variant="ghost" onClick={onClose} disabled={isLoading}>
                     Cancel
                   </Button>

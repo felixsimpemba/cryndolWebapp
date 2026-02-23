@@ -21,9 +21,9 @@ const useAuthStore = create(
 
       // Login
       login: async (email, password) => {
-        const { user, token, greeting } = await authService.login(email, password);
-        set({ user, token, isAuthenticated: true });
-        return { user, token, greeting };
+        const { user, tokens, greeting } = await authService.login(email, password);
+        set({ user, token: tokens.accessToken, isAuthenticated: true });
+        return { user, tokens, greeting };
       },
 
       // Register
@@ -34,16 +34,16 @@ const useAuthStore = create(
           return { verificationRequired: true, email: result.email };
         }
 
-        const { user, token } = result;
-        set({ user, token, isAuthenticated: true });
-        return { user, token };
+        const { user, tokens } = result;
+        set({ user, token: tokens.accessToken, isAuthenticated: true });
+        return { user, tokens };
       },
 
       // Verify OTP
       verifyOtp: async (email, code) => {
         const { user, tokens, greeting } = await authService.verifyOtp(email, code);
-        set({ user, token: tokens, isAuthenticated: true });
-        return { user, token: tokens, greeting };
+        set({ user, token: tokens.accessToken, isAuthenticated: true });
+        return { user, tokens, greeting };
       },
 
       // Resend OTP
