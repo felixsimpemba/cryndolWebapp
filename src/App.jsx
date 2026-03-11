@@ -46,8 +46,8 @@ function App() {
           <BackButtonHandler />
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            {/* <Route path="/" element={<Login />} /> */}
+            {/* <Route path="/" element={<LandingPage />} /> */}
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -449,7 +449,7 @@ const LandingPage = () => {
       </section>
 
       {/* ── Testimonials ───────────────────────────────────────── */}
-      <section className="py-24 px-6 bg-slate-50 dark:bg-[#0F172A]">
+      {/* <section className="py-24 px-6 bg-slate-50 dark:bg-[#0F172A]">
         <div className="container mx-auto max-w-6xl">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="mb-14 text-center max-w-2xl mx-auto">
             <motion.p variants={fade} className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-3">Real results</motion.p>
@@ -479,7 +479,7 @@ const LandingPage = () => {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── Pricing ────────────────────────────────────────────── */}
       {/* <section id="pricing" className="py-24 px-6 bg-white dark:bg-slate-900">
