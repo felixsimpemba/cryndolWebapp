@@ -2,6 +2,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { PageLoader } from './ui/Loader';
+import { hasPermission } from '../utils/permissions';
+import toast from 'react-hot-toast';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
@@ -32,8 +34,22 @@ const ProtectedRoute = ({ children }) => {
   // For safety without changing imports extensively, we can check path.
   
   const currentPath = window.location.pathname;
-  if (!user?.hasBusinessProfile && !currentPath.includes('/app/business')) {
-     return <Navigate to="/app/business" replace />; 
+  if (!user?.hasBusinessProfile && currentPath !== '/onboarding') {
+     return <Navigate to="/onboarding" replace />; 
+  }
+
+  // If user HAS business profile but is trying to go to onboarding, send them to dashboard
+  if (user?.hasBusinessProfile && currentPath === '/onboarding') {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+
+  // Role-based route protection
+  if (currentPath.startsWith('/app/')) {
+    const feature = currentPath.split('/')[2]; // e.g., 'dashboard', 'settings'
+    if (feature && !hasPermission(user?.role, feature)) {
+       toast.error("You don't have permission to access this section");
+       return <Navigate to="/app/dashboard" replace />;
+    }
   }
 
   return children;

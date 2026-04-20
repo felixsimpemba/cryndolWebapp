@@ -21,25 +21,16 @@
 }
 
 @layer components {
-  /* Glassmorphism - Premium Finance Style */
+  /* Standard Layout Panels */
   .glass {
-    @apply bg-white/80 backdrop-blur-xl border-slate-200 shadow-sm border;
-    @apply dark:bg-slate-900/60 dark:backdrop-blur-xl dark:border-slate-800 dark:shadow-none;
+    @apply bg-white border-slate-200 shadow-sm border;
+    @apply dark:bg-slate-900 dark:border-slate-800 dark:shadow-none;
   }
 
   .glass-hover {
-    @apply transition-all duration-300 hover:shadow-md;
-    @apply hover:bg-slate-50/80;
-    @apply dark:hover:bg-slate-800/50 dark:hover:shadow-glow;
-  }
-
-  /* Gradient backgrounds */
-  .gradient-primary {
-    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  }
-
-  .gradient-secondary {
-    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    @apply transition-all duration-150 hover:shadow-md;
+    @apply hover:bg-slate-50;
+    @apply dark:hover:bg-slate-800;
   }
 
   /* Scrollbar styling */
@@ -61,20 +52,20 @@
     background-color: #475569;
   }
 
-  /* Input focus glow */
+  /* Input focus highlight */
   .input-glow:focus {
-    @apply ring-2 ring-primary-500/50 border-primary-500 shadow-glow-primary;
+    @apply ring-2 ring-primary-500/50 border-primary-500;
   }
 }
 
 @layer utilities {
-  /* Text gradients */
+  /* Standard utilities */
   .text-gradient {
-    @apply bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   .text-gradient-primary {
-    @apply bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent;
+    @apply text-primary-600 dark:text-primary-400;
   }
 
   /* Animation delays */
@@ -110,7 +101,7 @@
 
 /* Loading skeleton */
 .skeleton {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite, shimmer 1.5s infinite;
+  animation: shimmer 1.5s infinite;
   background: linear-gradient(to right, #1e293b, #334155, #1e293b);
   background-size: 200% 100%;
   border-radius: 0.5rem;

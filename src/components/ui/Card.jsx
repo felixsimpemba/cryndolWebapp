@@ -5,10 +5,10 @@ const Card = ({ className, children, hover = false, gradient = false, ...props }
   return (
     <div
       className={cn(
-        'glass rounded-xl p-6',
-        'transition-all duration-300',
-        hover && 'hover:bg-slate-50 dark:hover:bg-white/10 hover:scale-[1.02] hover:shadow-md dark:hover:shadow-glow cursor-pointer',
-        gradient && 'bg-gradient-to-br from-primary-900/10 to-secondary-900/10 dark:from-primary-900/20 dark:to-secondary-900/20',
+        'glass rounded-xl sm:rounded-2xl p-4 sm:p-6',
+        'transition-all duration-150',
+        hover && 'hover:bg-slate-50 dark:hover:bg-white/5 hover:shadow-md cursor-pointer',
+        gradient && 'bg-slate-50/50 dark:bg-slate-800/30',
         className
       )}
       {...props}
@@ -28,7 +28,7 @@ const CardHeader = ({ className, children, ...props }) => {
 
 const CardTitle = ({ className, children, ...props }) => {
   return (
-    <h3 className={cn('text-xl font-bold text-slate-900 dark:text-slate-100', className)} {...props}>
+    <h3 className={cn('text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100', className)} {...props}>
       {children}
     </h3>
   );

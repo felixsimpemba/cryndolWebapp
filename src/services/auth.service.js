@@ -4,8 +4,8 @@ class AuthService {
   /**
    * Login user
    */
-  async login(email, password) {
-    const response = await api.post('/auth/login', { email, password });
+  async login(email, password, remember = false) {
+    const response = await api.post('/auth/login', { email, password, remember });
     // Laravel returns: { success, message, greeting, data: { user, tokens } }
     const { user, tokens } = response.data.data;
     const greeting = response.data.greeting;
@@ -69,6 +69,19 @@ class AuthService {
    */
   async createBusinessProfile(data) {
     const response = await api.post('/auth/business-profile', data);
+    return response.data;
+  }
+
+  /**
+   * Update business profile (including logo)
+   */
+  async updateBusinessProfile(data) {
+    // If using FormData (for logo upload), we need to spoof PUT method for Laravel
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+    }
+    // Do not manually set `Content-Type` for FormData: Axios will include the boundary.
+    const response = await api.post('/settings/profile', data);
     return response.data;
   }
 

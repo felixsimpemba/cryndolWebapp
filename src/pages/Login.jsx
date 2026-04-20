@@ -62,7 +62,7 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const { user, greeting } = await login(formData.email, formData.password);
+      const { user, greeting } = await login(formData.email, formData.password, formData.remember);
       // Show personalized greeting with time-based message
       toast.success(greeting || 'Login successful! Welcome back.');
 
@@ -103,19 +103,19 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <div className="glass rounded-2xl p-8 shadow-2xl border border-white/10">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 sm:mb-8">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring' }}
-              className="flex items-center justify-center mx-auto mb-4"
+              className="flex items-center justify-center mx-auto mb-3 sm:mb-4"
             >
-              <img src={logo} alt="Cryndol Logo" className="h-16 w-auto object-contain" />
+              <img src={logo} alt="Cryndol Logo" className="h-10 sm:h-12 w-auto object-contain" />
             </motion.div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-gray-100 mb-2">Welcome Back</h1>
-            <p className="text-slate-500 dark:text-gray-400">Sign in to manage your loan business</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Welcome Back</h1>
+            <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Sign in to manage your loan business</p>
           </div>
 
           {/* Form */}

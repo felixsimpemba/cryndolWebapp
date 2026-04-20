@@ -11,6 +11,7 @@ const Input = React.forwardRef(
       leftIcon,
       rightIcon,
       type = 'text',
+      isLoading,
       containerClassName,
       ...props
     },
@@ -19,7 +20,7 @@ const Input = React.forwardRef(
     return (
       <div className={cn("w-full", containerClassName)}>
         {label && (
-          <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-gray-300 mb-1.5 sm:mb-2">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -34,10 +35,10 @@ const Input = React.forwardRef(
             ref={ref}
             type={type}
             className={cn(
-              'block w-full px-4 py-2.5 rounded-lg transition-all duration-200',
+              'block w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-all duration-200',
               'bg-white dark:bg-slate-800/50',
               'border border-slate-300 dark:border-slate-700',
-              'text-slate-900 dark:text-gray-100',
+              'text-sm sm:text-base text-slate-900 dark:text-gray-100',
               'placeholder-slate-400 dark:placeholder-gray-500',
               'focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500',
               'hover:border-slate-400 dark:hover:border-slate-600',
@@ -49,7 +50,14 @@ const Input = React.forwardRef(
             )}
             {...props}
           />
-          {rightIcon && (
+          {isLoading ? (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <svg className="animate-spin h-5 w-5 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          ) : rightIcon && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <span className="text-slate-400 dark:text-gray-400">{rightIcon}</span>
             </div>

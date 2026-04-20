@@ -40,10 +40,10 @@ const Collections = () => {
     };
 
     return (
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Header title="Collections" />
 
-            <div className="p-6">
+            <div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <Card className="bg-red-500/10 border-red-500/20">
                         <Card.Content>

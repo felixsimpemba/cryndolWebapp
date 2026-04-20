@@ -223,23 +223,23 @@ const Register = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
 
           {/* Header Branding */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6 sm:mb-8">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: 'spring' }}
-              className="flex items-center justify-center mx-auto mb-4"
+              className="flex items-center justify-center mx-auto mb-3 sm:mb-4"
             >
-              <img src={logo} alt="Cryndol Logo" className="h-12 w-auto object-contain" />
+              <img src={logo} alt="Cryndol Logo" className="h-10 sm:h-12 w-auto object-contain" />
             </motion.div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
               {step === 'register' ? 'Create Account' : 'Verify Email'}
             </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-              {step === 'register' ? 'Start managing your loan business today' : `We've sent a code to ${formData.email}`}
+            <p className="text-slate-500 dark:text-slate-400 text-[11px] sm:text-sm mt-1">
+              {step === 'register' ? 'Start managing your loan business today' : `Verification code sent to ${formData.email}`}
             </p>
           </div>
 

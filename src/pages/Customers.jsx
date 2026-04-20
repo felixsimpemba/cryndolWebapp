@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
@@ -19,6 +20,7 @@ const Customers = () => {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
   const { confirm } = useConfirmation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCustomers();
@@ -70,18 +72,23 @@ const Customers = () => {
   const filteredCustomers = customers;
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Header title="Customers" />
 
-      <div className="p-6">
+      <div>
         <Card>
           <Card.Header>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <Card.Title>All Customers</Card.Title>
+                <Card.Title className="text-xl sm:text-2xl">All Customers</Card.Title>
                 <Card.Description>Manage your customer database</Card.Description>
               </div>
-              <Button variant="primary" leftIcon={<Plus size={18} />} onClick={() => setIsModalOpen(true)}>
+              <Button 
+                variant="primary" 
+                leftIcon={<Plus size={18} />} 
+                onClick={() => setIsModalOpen(true)}
+                className="w-full sm:w-auto"
+              >
                 Add Customer
               </Button>
             </div>
@@ -123,31 +130,48 @@ const Customers = () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.05 }}
-                          className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                          className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                          onClick={() => navigate(`/app/customers/${customer.id}`)}
                         >
                           <td className="py-3 px-4 text-sm text-slate-900 dark:text-gray-200 font-medium">
-                            {customer.fullName}
+                            {customer.first_name + ' ' + (customer.last_name || '')}
                           </td>
                           <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.email}</td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.phoneNumber}</td>
+                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.phone}</td>
                           <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
                             {formatDate(customer.created_at)}
                           </td>
                           <td className="py-3 px-4">
-                            <div className="flex items-center justify-end space-x-2">
-                              <button
-                                className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
-                                onClick={() => handleEdit(customer)}
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                className="p-2 hover:bg-red-500/10 text-red-400 rounded-lg transition-colors"
-                                onClick={() => handleDelete(customer.id)}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                                <button
+                                  className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/app/customers/${customer.id}`);
+                                  }}
+                                  title="View Details"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                <button
+                                  className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEdit(customer);
+                                  }}
+                                  title="Edit"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                  className="p-2 hover:bg-red-500/10 text-red-400 rounded-lg transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(customer.id);
+                                  }}
+                                  title="Delete"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
                           </td>
                         </motion.tr>
                       ))

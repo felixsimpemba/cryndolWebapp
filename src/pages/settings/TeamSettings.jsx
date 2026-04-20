@@ -10,7 +10,7 @@ const TeamSettings = () => {
     const [team, setTeam] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showInvite, setShowInvite] = useState(false);
-    const [inviteData, setInviteData] = useState({ fullName: '', email: '', role: 'officer' });
+    const [inviteData, setInviteData] = useState({ fullName: '', email: '', role: 'loan_officer' });
     const { confirm } = useConfirmation();
 
     useEffect(() => {
@@ -33,9 +33,9 @@ const TeamSettings = () => {
         e.preventDefault();
         try {
             await api.post('/settings/team', inviteData);
-            toast.success('Team member invited');
+            toast.success('Team member invited successfully');
             setShowInvite(false);
-            setInviteData({ fullName: '', email: '', role: 'officer' });
+            setInviteData({ fullName: '', email: '', role: 'loan_officer' });
             fetchTeam();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to invite member');
@@ -92,10 +92,9 @@ const TeamSettings = () => {
                                 value={inviteData.role}
                                 onChange={(e) => setInviteData({ ...inviteData, role: e.target.value })}
                             >
-                                <option value="admin">Administrator</option>
-                                <option value="manager">Manager</option>
-                                <option value="officer">Loan Officer</option>
-                                <option value="audit">Auditor</option>
+                                <option value="admin">Admin</option>
+                                <option value="loan_officer">Loan Officer</option>
+                                <option value="viewer">Viewer</option>
                             </select>
                         </div>
                     </div>
@@ -133,17 +132,26 @@ const TeamSettings = () => {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 capitalize">
-                                        {member.role || 'user'}
+                                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        ${member.role?.toLowerCase() === 'super_admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                                          member.role?.toLowerCase() === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 
+                                          member.role?.toLowerCase() === 'loan_officer' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 
+                                          'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'} capitalize`}>
+                                        {member.role?.replace('_', ' ') || 'user'}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                    Active
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        Active
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onClick={() => handleRemove(member.id)} className="text-red-600 hover:text-red-900 dark:hover:text-red-400">
-                                        Remove
-                                    </button>
+                                    {member.role !== 'super_admin' && (
+                                        <button onClick={() => handleRemove(member.id)} className="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors">
+                                            Remove
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}

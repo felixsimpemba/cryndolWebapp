@@ -65,22 +65,13 @@ export default {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "gradient-primary": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        "gradient-secondary":
-          "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-        "gradient-success": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-        "gradient-dark": "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
       },
       animation: {
-        "spin-slow": "spin 3s linear infinite",
-        "bounce-slow": "bounce 2s infinite",
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "fade-in": "fadeIn 0.5s ease-in-out",
-        "fade-in-up": "fadeInUp 0.5s ease-out",
-        "slide-in-right": "slideInRight 0.3s ease-out",
-        "slide-in-left": "slideInLeft 0.3s ease-out",
-        shimmer: "shimmer 2s infinite",
-        float: "float 3s ease-in-out infinite",
+        "fade-in": "fadeIn 0.2s ease-in-out",
+        "fade-in-up": "fadeInUp 0.3s ease-out",
+        "slide-in-right": "slideInRight 0.2s ease-out",
+        "slide-in-left": "slideInLeft 0.2s ease-out",
+        shimmer: "shimmer 1.5s infinite",
       },
       keyframes: {
         fadeIn: {
@@ -88,31 +79,21 @@ export default {
           "100%": { opacity: "1" },
         },
         fadeInUp: {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         slideInRight: {
-          "0%": { transform: "translateX(100%)" },
+          "0%": { transform: "translateX(20px)" },
           "100%": { transform: "translateX(0)" },
         },
         slideInLeft: {
-          "0%": { transform: "translateX(-100%)" },
+          "0%": { transform: "translateX(-20px)" },
           "100%": { transform: "translateX(0)" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-1000px 0" },
           "100%": { backgroundPosition: "1000px 0" },
         },
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-10px)" },
-        },
-      },
-      boxShadow: {
-        glow: "0 0 20px rgba(139, 92, 246, 0.5)",
-        "glow-lg": "0 0 30px rgba(139, 92, 246, 0.6)",
-        "glow-primary": "0 0 20px rgba(59, 130, 246, 0.5)",
-        "inner-glow": "inset 0 0 20px rgba(139, 92, 246, 0.3)",
       },
       backdropBlur: {
         xs: "2px",

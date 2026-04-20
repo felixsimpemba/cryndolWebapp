@@ -60,6 +60,18 @@ class CustomerService {
       throw error;
     }
   }
+
+  /**
+   * Verify NRC with ZRA
+   */
+  async verifyNrc(nrc) {
+    try {
+      const response = await api.get(`/customers/verify-nrc/${nrc}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default new CustomerService();

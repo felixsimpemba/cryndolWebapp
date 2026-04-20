@@ -12,18 +12,20 @@ import { useConfirmation } from '../../context/ConfirmationContext';
 const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
   const [activeTab, setActiveTab] = useState('basic');
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [lastVerifiedNRC, setLastVerifiedNRC] = useState('');
   const [formData, setFormData] = useState({
-    fullName: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    phoneNumber: '',
+    phone: '',
     address: '',
-    nrc_number: '',
-    tpin_number: '',
+    id_number: '',
+    id_type: 'NATIONAL_ID',
+    tpin: '',
     date_of_birth: '',
-    gender: '',
-    marital_status: '',
-    employment_status: '',
-    monthly_income: '',
+    occupation: '',
+    annual_income: '',
   });
   const [documents, setDocuments] = useState([]);
   const [errors, setErrors] = useState({});
@@ -32,17 +34,17 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
   useEffect(() => {
     if (customer) {
       setFormData({
-        fullName: customer.fullName || '',
+        first_name: customer.first_name || '',
+        last_name: customer.last_name || '',
         email: customer.email || '',
-        phoneNumber: customer.phoneNumber || '',
+        phone: customer.phone || '',
         address: customer.address || '',
-        nrc_number: customer.nrc_number || '',
-        tpin_number: customer.tpin_number || '',
+        id_number: customer.id_number || '',
+        id_type: customer.id_type || 'NATIONAL_ID',
+        tpin: customer.tpin || '',
         date_of_birth: customer.date_of_birth || '',
-        gender: customer.gender || '',
-        marital_status: customer.marital_status || '',
-        employment_status: customer.employment_status || '',
-        monthly_income: customer.monthly_income || '',
+        occupation: customer.occupation || '',
+        annual_income: customer.annual_income || '',
       });
       fetchDocuments(customer.id);
     } else {
@@ -52,17 +54,17 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
 
   const resetForm = () => {
     setFormData({
-      fullName: '',
+      first_name: '',
+      last_name: '',
       email: '',
-      phoneNumber: '',
+      phone: '',
       address: '',
-      nrc_number: '',
-      tpin_number: '',
+      id_number: '',
+      id_type: 'NATIONAL_ID',
+      tpin: '',
       date_of_birth: '',
-      gender: '',
-      marital_status: '',
-      employment_status: '',
-      monthly_income: '',
+      occupation: '',
+      annual_income: '',
     });
     setDocuments([]);
     setActiveTab('basic');
@@ -79,9 +81,64 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Auto-format NRC (XXXXXX/XX/X)
+    if (name === 'id_number' && formData.id_type === 'NATIONAL_ID') {
+      const digits = value.replace(/\D/g, '').slice(0, 9);
+      let res = '';
+      if (digits.length > 0) res += digits.slice(0, 6);
+      if (digits.length > 6) res += '/' + digits.slice(6, 8);
+      if (digits.length > 8) res += '/' + digits.slice(8, 9);
+
+      setFormData((prev) => ({ ...prev, [name]: res }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
+
+  const performNRCVerification = async (nrc) => {
+    const nrcToVerify = nrc || formData.id_number;
+    if (!nrcToVerify || isVerifying || lastVerifiedNRC === nrcToVerify) return;
+
+    setIsVerifying(true);
+    setLastVerifiedNRC(nrcToVerify);
+    try {
+      const response = await customerService.verifyNrc(nrcToVerify);
+      if (response.success && response.verified) {
+        toast.success('NRC verified automatically');
+        const fullName = response.name;
+        const nameParts = fullName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ');
+
+        setFormData(prev => ({
+          ...prev,
+          first_name: firstName,
+          last_name: lastName,
+          tpin: response.tpin || prev.tpin
+        }));
+      } else {
+        console.log('NRC not found on ZRA', response.message);
+      }
+    } catch (error) {
+      console.error('NRC verification failed', error);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  useEffect(() => {
+    if (formData.id_type !== 'NATIONAL_ID' || !formData.id_number || customer) return;
+
+    const nrcPattern1 = /^\d{6}\/\d{2}\/\d{1}$/; // XXXXXX/XX/X
+    const nrcPattern2 = /^\d{9}$/;               // XXXXXXXXX
+
+    if (nrcPattern1.test(formData.id_number) || nrcPattern2.test(formData.id_number)) {
+      performNRCVerification(formData.id_number);
+    }
+  }, [formData.id_number, formData.id_type]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,7 +168,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
 
     const data = new FormData();
     data.append('file', file);
-    data.append('document_type', 'other'); // You could add a selector for this
+    data.append('document_type', 'other');
 
     try {
       await documentService.uploadDocument(customer.id, data);
@@ -223,7 +280,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                             <div className="flex items-center gap-3">
                               <FileText className="text-slate-400" size={20} />
                               <div>
-                                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{doc.original_name}</p>
+                                <p className="text-sm font-medium text-slate-900 dark:text-slate-200">{doc.file_name}</p>
                                 <p className="text-xs text-slate-500 uppercase">{doc.document_type}</p>
                               </div>
                             </div>
@@ -244,36 +301,59 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {activeTab === 'basic' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input label="Full Name" name="fullName" value={formData.fullName} onChange={handleChange} error={errors.fullName} required />
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 mb-2">
+                          <Input
+                            label="NRC Number"
+                            name="id_number"
+                            value={formData.id_number}
+                            onChange={handleChange}
+                            onBlur={() => performNRCVerification()}
+                            error={errors.id_number}
+                            placeholder="e.g. 123456/12/1"
+                            isLoading={isVerifying}
+                            required
+                          />
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ID Type</label>
+                            <select name="id_type" value={formData.id_type} onChange={handleChange} className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                              <option value="NATIONAL_ID">National ID (NRC)</option>
+                              <option value="PASSPORT">Passport</option>
+                              <option value="DRIVER_LICENSE">Driver License</option>
+                            </select>
+                          </div>
+                          {isVerifying && (
+                            <div className="md:col-span-2 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-medium animate-pulse">
+                              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Verifying NRC with ...
+                            </div>
+                          )}
+                          {formData.tpin && !isVerifying && (
+                            <div className="md:col-span-2">
+                              <Input label="TPIN (Retrieved)" name="tpin" value={formData.tpin} onChange={handleChange} />
+                            </div>
+                          )}
+                        </div>
+
+                        <Input label="First Name" name="first_name" value={formData.first_name} onChange={handleChange} error={errors.first_name} required />
+                        <Input label="Last Name" name="last_name" value={formData.last_name} onChange={handleChange} error={errors.last_name} required />
                         <Input label="Email" name="email" type="email" value={formData.email} onChange={handleChange} error={errors.email} required />
-                        <Input label="Phone" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} error={errors.phoneNumber} required />
-                        <Input label="Address" name="address" value={formData.address} onChange={handleChange} error={errors.address} />
+                        <Input label="Phone" name="phone" value={formData.phone} onChange={handleChange} error={errors.phone} required />
+                        <div className="md:col-span-2">
+                          <Input label="Address" name="address" value={formData.address} onChange={handleChange} error={errors.address} />
+                        </div>
                       </div>
                     )}
 
                     {activeTab === 'kyc' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input label="NRC Number" name="nrc_number" value={formData.nrc_number} onChange={handleChange} error={errors.nrc_number} />
-                        <Input label="TPIN" name="tpin_number" value={formData.tpin_number} onChange={handleChange} error={errors.tpin_number} />
                         <Input label="Date of Birth" name="date_of_birth" type="date" value={formData.date_of_birth} onChange={handleChange} error={errors.date_of_birth} />
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender</label>
-                          <select name="gender" value={formData.gender} onChange={handleChange} className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
-                            <option value="">Select Gender</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                          </select>
+                        <Input label="Occupation" name="occupation" value={formData.occupation} onChange={handleChange} error={errors.occupation} />
+                        <div className="md:col-span-2">
+                          <Input label="Annual Income" name="annual_income" type="number" value={formData.annual_income} onChange={handleChange} error={errors.annual_income} />
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Employment</label>
-                          <select name="employment_status" value={formData.employment_status} onChange={handleChange} className="w-full bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
-                            <option value="">Select Status</option>
-                            <option value="employed">Employed</option>
-                            <option value="self_employed">Self Employed</option>
-                            <option value="unemployed">Unemployed</option>
-                          </select>
-                        </div>
-                        <Input label="Monthly Income" name="monthly_income" type="number" value={formData.monthly_income} onChange={handleChange} error={errors.monthly_income} />
                       </div>
                     )}
 

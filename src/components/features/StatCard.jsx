@@ -1,54 +1,46 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, DollarSign, Wallet } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
-const StatCard = ({ title, value, change, icon: Icon, gradient, delay = 0 }) => {
+const StatCard = ({ title, value, change, icon: Icon, delay = 0, color = 'emerald' }) => {
   const isPositive = change >= 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:-translate-y-1 transition-all duration-300 hover:shadow-xl dark:hover:shadow-glow group"
+      className="relative overflow-hidden bg-white dark:bg-slate-950 border border-slate-100 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all duration-300 group"
     >
-      {/* Decorative Gradient Blob */}
-      <div className={cn("absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-10 group-hover:opacity-20 transition-opacity blur-2xl", gradient)} />
+      <div className="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-emerald-500/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16 group-hover:scale-150 transition-transform duration-700" />
       
-      <div className="relative z-10 flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
-          <motion.h3
-            initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: delay + 0.2, type: 'spring' }}
-            className="text-3xl font-bold text-slate-900 dark:text-white"
+      <div className="relative z-10 flex items-start justify-between mb-3 sm:mb-4">
+        <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+          <Icon size={18} className="sm:hidden" />
+          <Icon size={24} className="hidden sm:block" />
+        </div>
+        {change !== 0 && (
+          <div
+            className={cn(
+              'flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider',
+              isPositive
+                ? 'bg-emerald-500/10 text-emerald-500'
+                : 'bg-rose-500/10 text-rose-500'
+            )}
           >
-            {value}
-          </motion.h3>
-        </div>
-        <div className={cn('p-3 rounded-xl shadow-lg text-white', gradient)}>
-          <Icon size={24} />
-        </div>
+            {isPositive ? <ArrowUpRight size={10} className="sm:size-3" /> : <ArrowDownRight size={10} className="sm:size-3" />}
+            <span className="text-[9px] sm:text-[10px]">{Math.abs(change)}%</span>
+          </div>
+        )}
       </div>
-
-      <div className="relative z-10 flex items-center space-x-2">
-        <div
-          className={cn(
-            'flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-semibold',
-            isPositive
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : 'bg-red-500/10 text-red-600 dark:text-red-400'
-          )}
-        >
-          <TrendingUp
-            size={14}
-            className={cn(!isPositive && 'rotate-180')}
-          />
-          <span>{Math.abs(change)}%</span>
-        </div>
-        <span className="text-xs text-slate-500 dark:text-slate-500">vs last month</span>
+      
+      <div className="relative z-10">
+        <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 truncate">{title}</p>
+        <h3 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          {value}
+        </h3>
+        <p className="hidden sm:block text-[10px] text-slate-400 mt-2 font-medium">Recorded this billing cycle</p>
       </div>
     </motion.div>
   );

@@ -155,7 +155,7 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                 )}
                             </h2>
                             <p className="text-sm text-slate-500 dark:text-gray-400">
-                                {loading ? '...' : `${loan?.loan_product?.name || 'Personal Loan'} • Created ${formatDate(loan?.created_at)}`}
+                                {loading ? '...' : `${loan?.loan_template?.name || 'Personal Loan'} • Created ${formatDate(loan?.created_at)}`}
                             </p>
                         </div>
                         <button
@@ -225,28 +225,28 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                             <Card>
                                                 <div className="p-4">
                                                     <p className="text-sm text-slate-500 dark:text-slate-400">Principal</p>
-                                                    <p className="text-xl font-bold text-slate-900 dark:text-white">{formatCurrency(loan.principal)}</p>
+                                                    <p className="text-xl font-bold text-slate-900 dark:text-white">{formatCurrency(loan.principal_amount)}</p>
                                                 </div>
                                             </Card>
                                             <Card>
                                                 <div className="p-4">
                                                     <p className="text-sm text-slate-500 dark:text-slate-400">Term</p>
                                                     <p className="text-xl font-bold text-slate-900 dark:text-white">
-                                                        {loan.termMonths} <span className="capitalize text-sm">{loan.term_unit || 'months'}</span>
+                                                        {loan.loan_term_months} <span className="capitalize text-sm">{loan.term_unit || 'months'}</span>
                                                     </p>
                                                 </div>
                                             </Card>
                                             <Card>
                                                 <div className="p-4">
                                                     <p className="text-sm text-slate-500 dark:text-slate-400">Due Date</p>
-                                                    <p className="text-lg font-bold text-slate-900 dark:text-white">{formatDate(loan.dueDate)}</p>
+                                                    <p className="text-lg font-bold text-slate-900 dark:text-white">{formatDate(loan.maturity_date)}</p>
                                                 </div>
                                             </Card>
                                             <Card>
                                                 <div className="p-4">
                                                     <p className="text-sm text-slate-500 dark:text-slate-400">est. Profit</p>
                                                     <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                                                        {formatCurrency(aggregates.totalDue - loan.principal)}
+                                                        {formatCurrency(aggregates.totalDue - loan.principal_amount)}
                                                     </p>
                                                 </div>
                                             </Card>
@@ -321,7 +321,7 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                                     {loan.payments && loan.payments.length > 0 ? (
                                                         loan.payments.sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map((payment) => (
                                                             <tr key={payment.id} className="bg-white border-b border-slate-100 dark:bg-slate-900 dark:border-slate-800">
-                                                                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{formatDate(payment.scheduledDate)}</td>
+                                                                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{formatDate(payment.due_date)}</td>
                                                                 <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{formatCurrency(payment.amountScheduled)}</td>
                                                                 <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(payment.amountPaid)}</td>
                                                                 <td className="px-4 py-3">

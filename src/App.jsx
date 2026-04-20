@@ -9,6 +9,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ThemeInitializer from './components/ThemeInitializer';
 import BackButtonHandler from './components/BackButtonHandler';
 import { ConfirmationProvider } from './context/ConfirmationContext';
+import useAuthStore from './store/authStore';
+import useIdleTimeout from './hooks/useIdleTimeout';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -16,6 +18,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AcceptInvite from './pages/AcceptInvite';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import DeleteAccount from './pages/DeleteAccount';
 import Dashboard from './pages/Dashboard';
@@ -23,9 +26,17 @@ import Customers from './pages/Customers';
 import Loans from './pages/Loans';
 import Disbursements from './pages/Disbursements';
 import Collections from './pages/Collections';
-import LoanProducts from './pages/LoanProducts';
+import LoanTemplates from './pages/LoanTemplates';
 import Business from './pages/Business';
 import Settings from './pages/Settings';
+import Onboarding from './pages/Onboarding';
+import Accounting from './pages/Accounting';
+import Team from './pages/Team';
+import Reports from './pages/Reports';
+import Branches from './pages/Branches';
+import Wallets from './pages/Wallets';
+import CustomerDetails from './pages/CustomerDetails';
+import LoanDetails from './pages/LoanDetails';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -38,6 +49,14 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const initialize = useAuthStore((state) => state.initialize);
+
+  React.useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  useIdleTimeout();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeInitializer />
@@ -46,14 +65,22 @@ function App() {
           <BackButtonHandler />
           <Routes>
             {/* Public Routes */}
-            {/* <Route path="/" element={<LandingPage />} /> */}
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/accept-invite" element={<AcceptInvite />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/deleteaccount" element={<DeleteAccount />} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Protected Routes */}
             <Route
@@ -67,12 +94,21 @@ function App() {
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="customers" element={<Customers />} />
+              <Route path="customers/:id" element={<CustomerDetails />} />
               <Route path="loans" element={<Loans />} />
+              <Route path="loans/:id" element={<LoanDetails />} />
               <Route path="disbursements" element={<Disbursements />} />
               <Route path="collections" element={<Collections />} />
-              <Route path="products" element={<LoanProducts />} />
+              <Route path="templates" element={<LoanTemplates />} />
               <Route path="business" element={<Business />} />
               <Route path="settings" element={<Settings />} />
+              
+              {/* New Advanced Operations Routes */}
+              <Route path="ledger" element={<Accounting />} />
+              <Route path="wallets" element={<Wallets />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="branches" element={<Branches />} />
+              <Route path="team" element={<Team />} />
             </Route>
 
             {/* Fallback */}
@@ -112,4 +148,3 @@ function App() {
 }
 
 export default App;
-

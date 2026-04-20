@@ -6,24 +6,24 @@ import Input from '../ui/Input';
 import { handleApiError } from '../../utils/errorHandler';
 import loanService from '../../services/loan.service';
 import customerService from '../../services/customer.service';
-import loanProductService from '../../services/loanProduct.service';
+import loanTemplateService from '../../services/loanTemplate.service';
 import CustomerModal from './CustomerModal';
 import toast from 'react-hot-toast';
 
 const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
-  const [loanProducts, setLoanProducts] = useState([]);
+  const [loanTemplates, setLoanTemplates] = useState([]);
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    borrower_id: '',
-    loan_product_id: '',
-    principal: '',
-    interestRate: '',
-    termMonths: '',
+    customer_id: '',
+    loan_template_id: '',
+    principal_amount: '',
+    interest_rate: '',
+    loan_term_months: '',
     term_unit: 'months',
-    startDate: new Date().toISOString().split('T')[0],
+    start_date: new Date().toISOString().split('T')[0],
     status: 'pending',
     collateral_name: '',
     collateral_description: '',
@@ -35,16 +35,16 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
   useEffect(() => {
     if (isOpen) {
       fetchCustomers();
-      fetchLoanProducts();
+      fetchLoanTemplates();
       // Reset form on open
       setFormData({
-        borrower_id: '',
-        loan_product_id: '',
-        principal: '',
-        interestRate: '',
-        termMonths: '',
+        customer_id: '',
+        loan_template_id: '',
+        principal_amount: '',
+        interest_rate: '',
+        loan_term_months: '',
         term_unit: 'months',
-        startDate: new Date().toISOString().split('T')[0],
+        start_date: new Date().toISOString().split('T')[0],
         status: 'pending',
         collateral_name: '',
         collateral_description: '',
@@ -56,16 +56,16 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
 
   // Calculate estimated due date whenever relevant fields change
   useEffect(() => {
-    if (formData.startDate && formData.termMonths) {
+    if (formData.start_date && formData.loan_term_months) {
       calculateDueDate();
     } else {
       setEstimatedDueDate('');
     }
-  }, [formData.startDate, formData.termMonths, formData.term_unit]);
+  }, [formData.start_date, formData.loan_term_months, formData.term_unit]);
 
   const calculateDueDate = () => {
-    const date = new Date(formData.startDate);
-    const term = parseInt(formData.termMonths);
+    const date = new Date(formData.start_date);
+    const term = parseInt(formData.loan_term_months);
 
     if (isNaN(term)) return;
 
@@ -93,17 +93,17 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const fetchLoanProducts = async () => {
+  const fetchLoanTemplates = async () => {
     try {
-      const response = await loanProductService.getProducts();
+      const response = await loanTemplateService.getProducts();
       // API returns { status: 'success', data: [...] }
       if (response.data && Array.isArray(response.data.data)) {
-        setLoanProducts(response.data.data);
+        setLoanTemplates(response.data.data);
       } else {
-        setLoanProducts([]);
+        setLoanTemplates([]);
       }
     } catch (error) {
-      console.error('Failed to fetch loan products:', error);
+      console.error('Failed to fetch loan templates:', error);
     }
   };
 
@@ -112,17 +112,35 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
-      // Auto-fill logic when product changes
-      if (name === 'loan_product_id') {
-        const product = loanProducts.find(p => p.id === parseInt(value));
-        if (product) {
-          newData.interestRate = product.interest_rate;
-          newData.termMonths = product.min_term || product.max_term || ''; // Default to min term
-          newData.term_unit = product.term_unit || 'months';
+      // Auto-fill logic when template changes
+      if (name === 'loan_template_id') {
+        const template = loanTemplates.find(p => p.id === parseInt(value));
+        if (template) {
+          const defaultTerm = template.default_term || '';
+          newData.loan_term_months = defaultTerm;
+          newData.term_unit = template.term_unit || 'months';
+          
+          // Auto-calculate interest rate when template is selected
+          const rate = parseFloat(template.interest_rate) || 0;
+          const term = parseFloat(defaultTerm) || 0;
+          newData.interest_rate = term > 0 ? (rate * term).toFixed(2) : rate;
         } else {
           newData.term_unit = 'months'; // Default reset
         }
       }
+
+      // Auto-calculate interest rate when loan_term_months changes, if template is selected
+      if (name === 'loan_term_months') {
+        if (prev.loan_template_id) {
+            const template = loanTemplates.find(p => p.id === parseInt(prev.loan_template_id));
+            if (template) {
+                const rate = parseFloat(template.interest_rate) || 0;
+                const term = parseFloat(value) || 0;
+                newData.interest_rate = (rate * term).toFixed(2);
+            }
+        }
+      }
+
       return newData;
     });
 
@@ -130,6 +148,9 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
+
+  const selectedTemplate = loanTemplates.find(t => t.id === parseInt(formData.loan_template_id));
+  const isCustomTermAllowed = !selectedTemplate || selectedTemplate.allow_custom_term;
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
@@ -223,18 +244,18 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
 
               <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
-                {/* Loan Product Selection */}
+                {/* Loan Template Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Loan Product (Optional)</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Loan Template (Optional)</label>
                   <div className="relative">
                     <select
-                      name="loan_product_id"
-                      value={formData.loan_product_id}
+                      name="loan_template_id"
+                      value={formData.loan_template_id}
                       onChange={handleChange}
                       className="block w-full px-4 py-2.5 pl-10 rounded-lg transition-all duration-200 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none appearance-none hover:border-slate-400 dark:hover:border-slate-600"
                     >
                       <option value="">Select a product (or Custom)...</option>
-                      {loanProducts.map((product) => (
+                      {loanTemplates.map((product) => (
                         <option key={product.id} value={product.id}>
                           {product.name} ({product.interest_rate}% Interest)
                         </option>
@@ -260,8 +281,8 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
                   </div>
                   <div className="relative">
                     <select
-                      name="borrower_id"
-                      value={formData.borrower_id}
+                      name="customer_id"
+                      value={formData.customer_id}
                       onChange={handleChange}
                       className={`block w-full px-4 py-2.5 pl-10 rounded-lg transition-all duration-200 
                         bg-white dark:bg-slate-800/50 
@@ -269,12 +290,12 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
                         text-slate-900 dark:text-gray-100 
                         focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 
                         outline-none appearance-none
-                        ${errors.borrower_id ? 'border-red-500' : 'hover:border-slate-400 dark:hover:border-slate-600'}`}
+                        ${errors.customer_id ? 'border-red-500' : 'hover:border-slate-400 dark:hover:border-slate-600'}`}
                     >
                       <option value="">Select a borrower...</option>
                       {customers.map((customer) => (
                         <option key={customer.id} value={customer.id}>
-                          {customer.fullName} ({customer.phoneNumber})
+                          {customer.first_name} ({customer.phoneNumber})
                         </option>
                       ))}
                     </select>
@@ -282,52 +303,71 @@ const CreateLoanModal = ({ isOpen, onClose, onSuccess }) => {
                       <User size={18} />
                     </div>
                   </div>
-                  {errors.borrower_id && <p className="mt-1 text-xs text-red-500">{errors.borrower_id}</p>}
+                  {errors.customer_id && <p className="mt-1 text-xs text-red-500">{errors.customer_id}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label="Principal Amount"
-                    name="principal"
+                    name="principal_amount"
                     type="number"
                     step="0.01"
-                    value={formData.principal}
+                    value={formData.principal_amount}
                     onChange={handleChange}
-                    error={errors.principal}
+                    error={errors.principal_amount}
                     leftIcon={<span className="font-bold text-slate-500 dark:text-gray-400">K</span>}
                     required
                   />
                   <Input
                     label="Interest Rate (%)"
-                    name="interestRate"
+                    name="interest_rate"
                     type="number"
                     step="0.01"
-                    value={formData.interestRate}
+                    value={formData.interest_rate}
                     onChange={handleChange}
-                    error={errors.interestRate}
+                    error={errors.interest_rate}
                     leftIcon={<Percent size={18} />}
                     required
-                    className={formData.loan_product_id ? 'bg-slate-100 dark:bg-slate-900/30' : ''}
+                    readOnly={!!selectedTemplate}
+                    className={!!selectedTemplate ? 'bg-slate-100 dark:bg-slate-900/30 cursor-not-allowed' : ''}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label={`Term (${getUnitLabel(formData.term_unit)})`}
-                    name="termMonths"
+                    name="loan_term_months"
                     type="number"
-                    value={formData.termMonths}
+                    value={formData.loan_term_months}
                     onChange={handleChange}
-                    error={errors.termMonths}
+                    error={errors.loan_term_months}
                     required
+                    readOnly={!isCustomTermAllowed}
+                    className={!isCustomTermAllowed ? 'bg-slate-100 dark:bg-slate-900/30 cursor-not-allowed' : ''}
                   />
+                  {!selectedTemplate && (
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">Term Unit</label>
+                      <select
+                        name="term_unit"
+                        value={formData.term_unit}
+                        onChange={handleChange}
+                        className="block w-full px-4 py-2 rounded-lg transition-all duration-200 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-gray-100 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none appearance-none"
+                      >
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                        <option value="years">Years</option>
+                      </select>
+                    </div>
+                  )}
                   <Input
                     label="Start Date"
-                    name="startDate"
+                    name="start_date"
                     type="date"
-                    value={formData.startDate}
+                    value={formData.start_date}
                     onChange={handleChange}
-                    error={errors.startDate}
+                    error={errors.start_date}
                     leftIcon={<Calendar size={18} />}
                     required
                   />

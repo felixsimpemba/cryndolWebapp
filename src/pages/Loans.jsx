@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, DollarSign, User, FileText, Download } from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
@@ -13,7 +14,6 @@ import toast from 'react-hot-toast';
 import { useConfirmation } from '../context/ConfirmationContext';
 
 import CreateLoanModal from '../components/modals/CreateLoanModal';
-import LoanDetailsModal from '../components/modals/LoanDetailsModal';
 
 const Loans = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,9 +21,8 @@ const Loans = () => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedLoanId, setSelectedLoanId] = useState(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const { confirm } = useConfirmation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchLoans();
@@ -95,7 +94,7 @@ const Loans = () => {
 
   const filteredLoans = loans.filter((loan) => {
     if (!searchTerm) return true;
-    const borrowerName = loan.borrower?.fullName || '';
+    const borrowerName = loan.customer?.fullName || '';
     return borrowerName.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -108,22 +107,32 @@ const Loans = () => {
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Header title="Loans" />
 
-      <div className="p-6">
+      <div>
         <Card>
           <Card.Header>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <Card.Title>All Loans</Card.Title>
+                <Card.Title className="text-xl sm:text-2xl">All Loans</Card.Title>
                 <Card.Description>Manage and track all loan applications</Card.Description>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" leftIcon={<Download size={18} />} onClick={handleExportLoans}>
-                  Export to Excel
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  leftIcon={<Download size={18} />} 
+                  onClick={handleExportLoans}
+                  className="flex-1 sm:flex-none text-xs sm:text-sm"
+                >
+                  Export
                 </Button>
-                <Button variant="primary" leftIcon={<Plus size={18} />} onClick={() => setIsCreateModalOpen(true)}>
+                <Button 
+                  variant="primary" 
+                  leftIcon={<Plus size={18} />} 
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex-1 sm:flex-none text-xs sm:text-sm"
+                >
                   New Loan
                 </Button>
               </div>
@@ -182,9 +191,9 @@ const Loans = () => {
                     {filteredLoans.length > 0 ? (
                       filteredLoans.map((loan, index) => {
                         const remaining = calculateRemainingBalance(
-                          loan.principal,
-                          loan.interestRate,
-                          loan.termMonths,
+                          loan.principal_amount,
+                          loan.interest_rate,
+                          loan.loan_term_months,
                           loan.totalPaid || 0
                         );
 
@@ -195,10 +204,7 @@ const Loans = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
                             className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                            onClick={() => {
-                              setSelectedLoanId(loan.id);
-                              setIsDetailsModalOpen(true);
-                            }}
+                            onClick={() => navigate(`/app/loans/${loan.id}`)}
                           >
                             <td className="py-3 px-4">
                               <div className="flex items-center space-x-3">
@@ -206,12 +212,12 @@ const Loans = () => {
                                   <User size={16} className="text-white" />
                                 </div>
                                 <span className="text-sm text-slate-900 dark:text-gray-200 font-medium">
-                                  {loan.borrower?.fullName || 'N/A'}
+                                  {loan.customer?.fullName || 'N/A'}
                                 </span>
                               </div>
                             </td>
                             <td className="py-3 px-4 text-sm font-semibold text-slate-900 dark:text-gray-100">
-                              {formatCurrency(loan.principal)}
+                              {formatCurrency(loan.principal_amount)}
                             </td>
                             <td className="py-3 px-4 text-sm text-slate-600 dark:text-gray-300">
                               {formatCurrency(remaining)}
@@ -226,27 +232,26 @@ const Loans = () => {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-sm text-slate-600 dark:text-gray-300">
-                              {loan.termMonths} <span className="capitalize">{loan.term_unit || 'months'}</span>
+                              {loan.loan_term_months} <span className="capitalize">{loan.term_unit || 'months'}</span>
                             </td>
                             <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
-                              {formatDate(loan.startDate)}
+                              {formatDate(loan.start_date)}
                             </td>
                             <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
-                              {formatDate(loan.dueDate)}
+                              {formatDate(loan.maturity_date)}
                             </td>
                             <td className="py-3 px-4 text-sm">
                               <div className="flex gap-2 justify-end">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedLoanId(loan.id);
-                                    setIsDetailsModalOpen(true);
-                                  }}
-                                  className="text-primary-500 hover:bg-primary-500/10 p-1.5 rounded transition-colors"
-                                  title="View Details"
-                                >
-                                  <FileText size={16} />
-                                </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/app/loans/${loan.id}`);
+                                    }}
+                                    className="text-primary-500 hover:bg-primary-500/10 p-1.5 rounded transition-colors"
+                                    title="View Details"
+                                  >
+                                    <FileText size={16} />
+                                  </button>
                                 {(loan.status === 'submitted' || loan.status === 'pending') && (
                                   <>
                                     <button
@@ -314,13 +319,6 @@ const Loans = () => {
         onSuccess={() => {
           fetchLoans();
         }}
-      />
-
-      <LoanDetailsModal
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-        loanId={selectedLoanId}
-        onUpdate={fetchLoans}
       />
     </div>
   );

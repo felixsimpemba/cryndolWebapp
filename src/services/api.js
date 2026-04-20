@@ -46,21 +46,28 @@ api.interceptors.response.use(
             refreshToken: refreshToken,
           });
 
-          const { accessToken } = response.data.data;
+          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
           localStorage.setItem('token', accessToken);
+          if (newRefreshToken) {
+            localStorage.setItem('refreshToken', newRefreshToken);
+          }
 
           // Retry original request
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, logout user
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+        // Fall through to logout logic below
       }
+
+      // No refresh token or refresh failed: Aggressively logout
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth-storage'); // Clear zustand explicitly
+      sessionStorage.removeItem('is_session_active');
+      window.location.href = '/login';
+      return Promise.reject(error);
     }
 
     // Handle other errors

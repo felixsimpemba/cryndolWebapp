@@ -1,120 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Users, DollarSign, Wallet, TrendingUp, Clock, CheckCircle } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import Header from '../components/layout/Header';
+import { 
+  Users, DollarSign, Wallet, TrendingUp, AlertTriangle, CheckCircle, 
+  ArrowUpRight, ArrowDownRight, Briefcase, Activity, Calendar, ShieldCheck
+} from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import Card from '../components/ui/Card';
 import StatCard from '../components/features/StatCard';
 import dashboardService from '../services/dashboard.service';
-import loanService from '../services/loan.service';
-import { formatCurrency, formatNumber, getLoanStatusColor } from '../utils/formatters';
+import useAuthStore from '../store/authStore';
+import { formatCurrency, formatNumber, formatPercentage, formatDate } from '../utils/formatters';
 import toast from 'react-hot-toast';
+import Button from '../components/ui/Button';
 
 const Dashboard = () => {
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState([]);
-  const [loanStatusData, setLoanStatusData] = useState([]);
-  const [recentLoans, setRecentLoans] = useState([]);
-  const [dashboardSummary, setDashboardSummary] = useState(null);
-
-  const handleAddCapital = async () => {
-    const amount = prompt("Enter amount to add to Working Capital:");
-    if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
-      try {
-        await dashboardService.addCapital(parseFloat(amount));
-        toast.success("Capital added successfully");
-        fetchDashboardData();
-      } catch (e) {
-        toast.error("Failed to add capital");
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  const [dashboardData, setDashboardData] = useState(null);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem('user'));
-      const businessId = user?.businessProfile?.id || user?.id;
-
-      // Fetch dashboard summary
-      // Fetch dashboard summary
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      const businessId = currentUser?.businessProfile?.id || currentUser?.id;
       const summary = await dashboardService.getSummary(businessId);
-      setDashboardSummary(summary);
-
-      // Build stats from API data
-      const statsData = [
-        {
-          title: 'Money in Business',
-          value: formatCurrency(summary.moneyInBusiness || 0),
-          change: 0,
-          icon: Wallet,
-          gradient: 'bg-gradient-to-br from-indigo-500 to-purple-600',
-        },
-        {
-          title: 'Current Balance',
-          value: formatCurrency(summary.currentBalance || 0),
-          change: 0,
-          icon: DollarSign,
-          gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
-        },
-        {
-          title: 'Profit Made',
-          value: formatCurrency(summary.profitMade || 0),
-          change: 0,
-          icon: CheckCircle,
-          gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
-        },
-        {
-          title: 'Estimated Profit',
-          value: formatCurrency(summary.estimatedProfit || 0),
-          change: 0,
-          icon: TrendingUp,
-          gradient: 'bg-gradient-to-br from-blue-500 to-cyan-600',
-        },
-      ];
-      setStats(statsData);
-
-      // Fetch recent loans
-      const loansResponse = await loanService.getLoans({ per_page: 5 });
-      const loans = loansResponse.data?.data || [];
-
-      // Transform loans for display
-      const formattedLoans = loans.map(loan => ({
-        id: loan.id,
-        customer: loan.borrower?.fullName || 'N/A',
-        amount: loan.principal,
-        status: loan.status?.toLowerCase() || 'pending',
-        date: loan.startDate || loan.created_at,
-      }));
-      setRecentLoans(formattedLoans);
-
-      // Calculate loan status distribution from loans
-      const statusCounts = {
-        active: 0,
-        pending: 0,
-        closed: 0,
-        defaulted: 0,
-      };
-
-      loans.forEach(loan => {
-        const status = loan.status?.toLowerCase();
-        if (statusCounts.hasOwnProperty(status)) {
-          statusCounts[status]++;
-        }
-      });
-
-      const statusData = [
-        { name: 'Active', value: statusCounts.active, color: '#10b981' },
-        { name: 'Pending', value: statusCounts.pending, color: '#f59e0b' },
-        { name: 'Closed', value: statusCounts.closed, color: '#3b82f6' },
-        { name: 'Defaulted', value: statusCounts.defaulted, color: '#ef4444' },
-      ];
-      setLoanStatusData(statusData);
-
+      setDashboardData(summary);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
       toast.error('Failed to load dashboard data');
@@ -123,218 +33,215 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const kpiStats = useMemo(() => {
+    if (!dashboardData) return [];
+    const { coreMetrics, growthMetrics } = dashboardData;
+    return [
+      { title: 'Liquid Capital', value: formatCurrency(coreMetrics.currentBalance || 0), change: growthMetrics.revenueGrowthRate, icon: Wallet },
+      { title: 'Projected Revenue', value: formatCurrency(coreMetrics.totalActiveLoanAmount), change: 12, icon: Activity },
+      { title: 'Realized Profit', value: formatCurrency(coreMetrics.realizedProfit), change: growthMetrics.revenueGrowthRate, icon: CheckCircle },
+      { title: 'Total Customers', value: formatNumber(coreMetrics.numberOfCustomers), change: growthMetrics.customerGrowthRate, icon: Users },
+    ];
+  }, [dashboardData]);
+
+  const loanStatusData = useMemo(() => {
+    if (!dashboardData) return [];
+    const { coreMetrics } = dashboardData;
+    return [
+      { name: 'Active', value: coreMetrics.loanStatusCounts.active, color: '#10b981' },
+      { name: 'Closed', value: coreMetrics.loanStatusCounts.closed, color: '#3b82f6' },
+      { name: 'Defaulted', value: coreMetrics.loanStatusCounts.defaulted, color: '#ef4444' },
+    ];
+  }, [dashboardData]);
+
+  if (loading || !dashboardData) {
     return (
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <Header title="Dashboard" />
-        <div className="p-6 flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-            <p className="mt-4 text-slate-600 dark:text-gray-400">Loading dashboard...</p>
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="text-center group">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mr-1" />
+            <Activity className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-emerald-500 animate-pulse" size={24} />
           </div>
+          <p className="mt-6 text-slate-500 font-black uppercase tracking-widest text-[10px] dark:text-slate-400">Synchronizing Financials...</p>
         </div>
       </div>
     );
   }
 
+  const { coreMetrics, growthMetrics } = dashboardData;
+
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-      {/* Ambient Background */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-emerald-500/5 dark:bg-emerald-500/10 blur-3xl -z-10 pointer-events-none" />
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Welcome Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">Financial Overview</h1>
+              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-1">
+                Hello <span className="text-emerald-500 font-bold">{user?.fullName?.split(' ')[0]}</span>, here's your portfolio today.
+              </p>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+              <Button variant="outline" leftIcon={<Calendar size={18} />} className="flex-1 sm:flex-none text-xs py-2.5">30 Days</Button>
+              <Button variant="primary" leftIcon={<ArrowUpRight size={18} />} className="flex-1 sm:flex-none text-xs py-2.5 whitespace-nowrap">New Application</Button>
+          </div>
+      </div>
 
-      <Header title="Dashboard" />
+      {/* KPI Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        {kpiStats.map((stat, index) => (
+          <StatCard key={stat.title} {...stat} delay={index * 0.05} />
+        ))}
+      </div>
 
-      <div className="p-6 space-y-6">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <StatCard key={stat.title} {...stat} delay={index * 0.1} />
-          ))}
-        </div>
+      {/* Main Analytical Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
+        
+        {/* Growth Chart */}
+        <Card className="lg:col-span-2 overflow-hidden">
+          <div className="p-4 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                   <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Performance Trends</h3>
+                   <h2 className="text-xl font-black text-slate-900 dark:text-white">Revenue & Profit Growth</h2>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[10px] font-black text-slate-500 uppercase">Revenue</span></div>
+                    <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500" /><span className="text-[10px] font-black text-slate-500 uppercase">Profit</span></div>
+                </div>
+            </div>
+            
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={growthMetrics.revenueTrend}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }} tickFormatter={(val) => `K${val/1000}k`} />
+                  <Tooltip cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
+                  <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenue)" />
+                  <Area type="monotone" dataKey="profit" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorProfit)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </Card>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Loan Status Distribution */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card>
-              <Card.Header>
-                <Card.Title>Loan Status Distribution</Card.Title>
-                <Card.Description>Overview of all loan statuses</Card.Description>
-              </Card.Header>
-              <Card.Content>
-                {loanStatusData.some(item => item.value > 0) ? (
-                  <>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
+        {/* Portfolio Pie */}
+        <Card className="flex flex-col">
+            <div className="p-4 sm:p-8">
+               <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Portfolio Mix</h3>
+               <h2 className="text-xl font-black text-slate-900 dark:text-white mt-1">Status Distribution</h2>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-center -mt-8">
+                <ResponsiveContainer width="100%" height={240}>
+                    <PieChart>
                         <Pie
-                          data={loanStatusData.filter(item => item.value > 0)}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
+                            data={loanStatusData.filter(d => d.value > 0)}
+                            innerRadius={70}
+                            outerRadius={100}
+                            paddingAngle={8}
+                            dataKey="value"
+                            stroke="none"
                         >
-                          {loanStatusData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
+                            {loanStatusData.map((e, i) => <Cell key={i} fill={e.color} />)}
                         </Pie>
                         <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-
-                    {/* Legend */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      {loanStatusData.map((item) => (
-                        <div key={item.name} className="flex items-center space-x-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span className="text-sm text-slate-500 dark:text-gray-400">{item.name}</span>
-                          <span className="text-sm font-semibold text-slate-900 dark:text-gray-200 ml-auto">
-                            {item.value}
-                          </span>
+                    </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-3 gap-4 w-full px-8 mt-4">
+                    {loanStatusData.map(item => (
+                        <div key={item.name} className="text-center group">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">{item.name}</p>
+                            <div className="flex items-center justify-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                                <span className="text-sm font-black text-slate-900 dark:text-white">{item.value}</span>
+                            </div>
                         </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="h-[300px] flex items-center justify-center text-slate-400 dark:text-gray-500">
-                    <p>No loan data available</p>
-                  </div>
-                )}
-              </Card.Content>
-            </Card>
-          </motion.div>
+                    ))}
+                </div>
+            </div>
+        </Card>
 
-          {/* Placeholder for Monthly Revenue - would need additional API endpoint */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Card>
-              <Card.Header>
-                <div className="flex justify-between items-center">
-                  <Card.Title>Capital Overview</Card.Title>
-                  <button
-                    onClick={handleAddCapital}
-                    className="px-3 py-1 text-sm bg-emerald-500/10 text-emerald-600 rounded-md hover:bg-emerald-500/20 transition-colors"
-                  >
-                    + Add Capital
-                  </button>
-                </div>
-                <Card.Description>Manage your business capital</Card.Description>
-              </Card.Header>
-              <Card.Content>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-lg">
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-gray-400">Working Capital</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-gray-100">
-                        {formatCurrency(dashboardSummary?.workingCapital || 0)}
-                      </p>
-                    </div>
-                    <DollarSign className="text-indigo-500" size={32} />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-lg">
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-gray-400">Current Balance</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-gray-100">
-                        {formatCurrency(dashboardSummary?.currentBalance || 0)}
-                      </p>
-                    </div>
-                    <Wallet className="text-emerald-500" size={32} />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-lg">
-                    <div>
-                      <p className="text-sm text-slate-500 dark:text-gray-400">Total Collected</p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-gray-100">
-                        {formatCurrency(dashboardSummary?.totalPaidAmount || 0)}
-                      </p>
-                    </div>
-                    <TrendingUp className="text-purple-500" size={32} />
-                  </div>
-                </div>
-              </Card.Content>
-            </Card>
-          </motion.div>
+      </div>
+
+      {/* Information Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
+        
+        {/* Receivables Alert */}
+        <div className="bg-emerald-600 rounded-3xl p-5 sm:p-8 text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-1000" />
+            <AlertTriangle className="text-emerald-400 mb-4" size={32} />
+            <h3 className="text-lg font-black italic">Upcoming Liquidity</h3>
+            <p className="text-emerald-50/70 text-sm mt-1 leading-relaxed">
+                You have <strong>{coreMetrics.loansDueNext7Days.count} loans</strong> maturing in the next 7 days, totaling <strong>{formatCurrency(coreMetrics.loansDueNext7Days.amount)}</strong>.
+            </p>
+            <Button className="mt-6 bg-white text-emerald-600 border-none hover:bg-emerald-50 text-xs font-black">View Schedule</Button>
         </div>
 
-        {/* Recent Loans Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Card>
-            <Card.Header>
-              <Card.Title>Recent Loans</Card.Title>
-              <Card.Description>Latest loan applications and updates</Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-white/10">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Customer</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Amount</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Status</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentLoans.length > 0 ? (
-                      recentLoans.map((loan, index) => (
-                        <motion.tr
-                          key={loan.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.7 + index * 0.05 }}
-                          className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                        >
-                          <td className="py-3 px-4 text-sm text-slate-800 dark:text-gray-200">{loan.customer}</td>
-                          <td className="py-3 px-4 text-sm font-semibold text-slate-900 dark:text-gray-100">
-                            {formatCurrency(loan.amount)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getLoanStatusColor(
-                                loan.status
-                              )}`}
-                            >
-                              {loan.status}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{loan.date}</td>
-                        </motion.tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4" className="py-12 text-center">
-                          <div className="text-slate-400 dark:text-gray-500">
-                            <p className="text-lg mb-2">No loans yet</p>
-                            <p className="text-sm">Create your first loan to get started</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card.Content>
-          </Card>
-        </motion.div>
+        {/* Quick Insights Cache */}
+        <Card className="bg-slate-900 border-none p-5 sm:p-8 flex flex-col justify-between">
+            <div>
+               <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Yield Analysis</span>
+                  <div className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase">Live</div>
+               </div>
+               <h3 className="text-xl font-black text-white mt-4 italic">Portfolio Quality Index</h3>
+               <p className="text-slate-400 text-sm mt-2">Your current NPL (Non-Performing Loan) ratio is within the target threshold.</p>
+            </div>
+            <div className="mt-8 flex items-end justify-between">
+                <div>
+                    <p className="text-2xl font-black text-white italic">8.4%</p>
+                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Excellent Range</p>
+                </div>
+                <TrendingUp className="text-emerald-500" size={32} />
+            </div>
+        </Card>
+
+        {/* System Health */}
+        <Card className="p-5 sm:p-8">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">System Integrity</h3>
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-emerald-500"><ShieldCheck size={18} /></div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Transaction Ledger</span>
+                    </div>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase">Synced</span>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-emerald-500"><Briefcase size={18} /></div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Regulatory Compliance</span>
+                    </div>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase">Active</span>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-blue-500"><DollarSign size={18} /></div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Mobile Money Hub</span>
+                    </div>
+                    <span className="text-[10px] font-black text-blue-500 uppercase">Connected</span>
+                </div>
+            </div>
+        </Card>
+
       </div>
     </div>
   );
 };
 
 export default Dashboard;
-

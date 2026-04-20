@@ -58,10 +58,10 @@ const Disbursements = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Header title="Disbursements" />
 
-      <div className="p-6">
+      <div>
         <Card>
           <Card.Header>
             <Card.Title>Disbursement Queue</Card.Title>
