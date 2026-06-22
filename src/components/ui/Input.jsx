@@ -26,11 +26,6 @@ const Input = React.forwardRef(
           </label>
         )}
         <div className="relative">
-          {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-slate-400 dark:text-gray-400">{leftIcon}</span>
-            </div>
-          )}
           <input
             ref={ref}
             type={type}

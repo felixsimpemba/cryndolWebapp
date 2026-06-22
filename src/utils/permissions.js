@@ -1,84 +1,62 @@
-export const ROLES = {
-  SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
-  LOAN_OFFICER: 'loan_officer',
-  VIEWER: 'viewer',
-};
+import { useCallback } from 'react';
 
-const PERMISSIONS = {
-  [ROLES.SUPER_ADMIN]: [
-    'dashboard',
-    'customers',
-    'loans',
-    'disbursements',
-    'collections',
-    'templates',
-    'business',
-    'settings',
-    'ledger',
-    'wallets',
-    'reports',
-    'branches',
-    'team',
-    'view_financial_summary',
-    'manage_capital',
-  ],
-  [ROLES.ADMIN]: [
-    'dashboard',
-    'customers',
-    'loans',
-    'disbursements',
-    'collections',
-    'templates',
-    'settings',
-    'reports',
-    'branches',
-    'team',
-    'view_financial_summary',
-  ],
-  [ROLES.LOAN_OFFICER]: [
-    'dashboard',
-    'customers',
-    'loans',
-    'disbursements',
-    'collections',
-  ],
-  [ROLES.VIEWER]: [
-    'dashboard',
-    'customers',
-    'loans',
-    'reports',
-  ],
+/**
+ * Global permission validator
+ * @param {string} permission - Permission key (e.g., 'loans.create')
+ * @returns {boolean}
+ */
+export const hasPermission = (permission) => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return false;
+
+    // Super admins have all permissions
+    if (user.role === 'SUPER_ADMIN') return true;
+    const permissions = user.permissions || [];
+    return permissions.includes(permission);
+  } catch (error) {
+    console.error('Permission check failed:', error);
+    return false;
+  }
 };
 
 /**
- * Check if a role has permission for a specific feature or page
- * @param {string} role - The user's role
- * @param {string} permission - The permission/feature key to check
- * @returns {boolean}
+ * React hook for permission checks
  */
-export const hasPermission = (role, permission) => {
-  if (!role) return false;
-  
-  // Backend returns uppercase role names, normalize them
-  const normalizedRole = role.toLowerCase();
-  const rolePermissions = PERMISSIONS[normalizedRole] || [];
-  
-  return rolePermissions.includes(permission);
+export const usePermissions = () => {
+  const check = useCallback((permission) => {
+    return hasPermission(permission);
+  }, []);
+
+  return { can: check };
 };
 
-/**
- * Check if a role is at least a certain level (hierarchy)
- * @param {string} userRole 
- * @param {string} requiredRole 
- * @returns {boolean}
- */
-export const isAtLeast = (userRole, requiredRole) => {
-  const normalizedUserRole = userRole?.toLowerCase();
-  const normalizedRequiredRole = requiredRole?.toLowerCase();
-  
-  const hierarchy = [ROLES.VIEWER, ROLES.LOAN_OFFICER, ROLES.ADMIN, ROLES.SUPER_ADMIN];
-  const userIndex = hierarchy.indexOf(normalizedUserRole);
-  const requiredIndex = hierarchy.indexOf(normalizedRequiredRole);
-  return userIndex >= requiredIndex;
+export const PERMISSIONS = {
+  LOANS: {
+    VIEW: 'loans.view',
+    CREATE: 'loans.create',
+    EDIT: 'loans.edit',
+    DELETE: 'loans.delete',
+    APPROVE: 'loans.approve',
+  },
+  DISBURSEMENTS: {
+    VIEW: 'disbursements.view',
+    PROCESS: 'disbursements.process',
+  },
+  CUSTOMERS: {
+    VIEW: 'customers.view',
+    CREATE: 'customers.create',
+    EDIT: 'customers.edit',
+  },
+  REPORTS: {
+    VIEW: 'reports.view',
+  },
+  SETTINGS: {
+    VIEW: 'settings.view',
+    EDIT: 'settings.edit',
+  },
+  TEAM: {
+    VIEW: 'team.view',
+    EDIT: 'team.edit',
+  }
 };

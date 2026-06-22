@@ -16,6 +16,7 @@ const Login = () => {
   const { login } = useAuthStore();
   const { theme } = useUIStore();
   const logo = theme === 'dark' ? logoDark : logoLight;
+  const [uiErrorMessage, setUiErrorMessage] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -69,7 +70,7 @@ const Login = () => {
       if (user.hasBusinessProfile) {
         navigate('/app/dashboard');
       } else {
-        navigate('/app/business');
+        navigate('/onboarding');
       }
     } catch (error) {
       const { message, fieldErrors, isValidation } = handleApiError(error);
@@ -77,9 +78,11 @@ const Login = () => {
       if (isValidation) {
         // Set field-specific errors from backend
         setErrors(fieldErrors);
+        setUiErrorMessage(message);
         toast.error(message); // Still show the general message
       } else {
         // For non-validation errors, show a toast
+        setUiErrorMessage(message);
         toast.error(message);
       }
     } finally {
@@ -152,6 +155,10 @@ const Login = () => {
               }
               required
             />
+
+            {uiErrorMessage && (
+              <div className="text-red-500 text-sm">{uiErrorMessage}</div>
+            )}
 
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-2 cursor-pointer">

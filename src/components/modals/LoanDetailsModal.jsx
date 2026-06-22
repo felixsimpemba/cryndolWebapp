@@ -307,40 +307,75 @@ const LoanDetailsModal = ({ isOpen, onClose, loanId, onUpdate }) => {
                                 {activeTab === 'schedule' && (
                                     <div>
                                         <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">Repayment Schedule</h3>
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-sm text-left text-slate-500 dark:text-gray-400">
-                                                <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-gray-300">
-                                                    <tr>
-                                                        <th className="px-4 py-3">Due Date</th>
-                                                        <th className="px-4 py-3">Expected Amount</th>
-                                                        <th className="px-4 py-3">Paid Amount</th>
-                                                        <th className="px-4 py-3">Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {loan.payments && loan.payments.length > 0 ? (
-                                                        loan.payments.sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map((payment) => (
-                                                            <tr key={payment.id} className="bg-white border-b border-slate-100 dark:bg-slate-900 dark:border-slate-800">
-                                                                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{formatDate(payment.due_date)}</td>
-                                                                <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{formatCurrency(payment.amountScheduled)}</td>
-                                                                <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(payment.amountPaid)}</td>
-                                                                <td className="px-4 py-3">
-                                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' :
-                                                                        payment.status === 'overdue' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' :
-                                                                            'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-                                                                        }`}>
-                                                                        {payment.status}
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        ))
-                                                    ) : (
+                                        <div className="space-y-4">
+                                            {/* Desktop Table */}
+                                            <div className="hidden md:block overflow-x-auto">
+                                                <table className="w-full text-sm text-left text-slate-500 dark:text-gray-400">
+                                                    <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-gray-300">
                                                         <tr>
-                                                            <td colSpan="4" className="px-4 py-8 text-center">No schedule items found.</td>
+                                                            <th className="px-4 py-3">Due Date</th>
+                                                            <th className="px-4 py-3">Expected Amount</th>
+                                                            <th className="px-4 py-3">Paid Amount</th>
+                                                            <th className="px-4 py-3">Status</th>
                                                         </tr>
-                                                    )}
-                                                </tbody>
-                                            </table>
+                                                    </thead>
+                                                    <tbody>
+                                                        {loan.payments && loan.payments.length > 0 ? (
+                                                            loan.payments.sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map((payment) => (
+                                                                <tr key={payment.id} className="bg-white border-b border-slate-100 dark:bg-slate-900 dark:border-slate-800">
+                                                                    <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{formatDate(payment.due_date)}</td>
+                                                                    <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{formatCurrency(payment.amountScheduled)}</td>
+                                                                    <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-semibold">{formatCurrency(payment.amountPaid)}</td>
+                                                                    <td className="px-4 py-3">
+                                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' :
+                                                                            payment.status === 'overdue' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' :
+                                                                                'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                                                            }`}>
+                                                                            {payment.status}
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            ))
+                                                        ) : (
+                                                            <tr>
+                                                                <td colSpan="4" className="px-4 py-8 text-center">No schedule items found.</td>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {/* Mobile Cards */}
+                                            <div className="grid grid-cols-1 gap-4 md:hidden">
+                                                {loan.payments && loan.payments.length > 0 ? (
+                                                    loan.payments.sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate)).map((payment) => (
+                                                        <div key={payment.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm">
+                                                            <div className="flex justify-between items-center mb-3">
+                                                                <div className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                    {formatDate(payment.due_date)}
+                                                                </div>
+                                                                <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase border ${payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' :
+                                                                    payment.status === 'overdue' ? 'bg-red-50 text-red-700 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20' :
+                                                                        'bg-slate-50 text-slate-700 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                                                    }`}>
+                                                                    {payment.status}
+                                                                </span>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-y-2 text-sm pt-2 border-t border-slate-50 dark:border-white/5">
+                                                                <div className="text-slate-500 dark:text-gray-400">Expected</div>
+                                                                <div className="text-right font-bold text-slate-900 dark:text-white">{formatCurrency(payment.amountScheduled)}</div>
+                                                                
+                                                                <div className="text-slate-500 dark:text-gray-400">Paid</div>
+                                                                <div className="text-right text-emerald-600 dark:text-emerald-400 font-medium">{formatCurrency(payment.amountPaid)}</div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center py-8 text-slate-500 border border-slate-100 dark:border-white/5 rounded-xl">
+                                                        No schedule items found.
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 )}

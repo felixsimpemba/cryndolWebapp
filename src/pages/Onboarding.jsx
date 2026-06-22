@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Mail, Phone, MapPin, Upload, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, Upload, ArrowRight, CheckCircle2, DollarSign, Wallet, ShieldCheck } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -8,6 +8,7 @@ import Card from '../components/ui/Card';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import authService from '../services/auth.service';
+import { formatCurrencyInput, parseCurrency } from '../utils/utils';
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -21,7 +22,19 @@ const Onboarding = () => {
     contact_email: user?.email || '',
     contact_phone: user?.phoneNumber || '',
     address: '',
+    working_capital: '',
   });
+
+  const [displayValue, setDisplayValue] = useState('');
+
+  const handleCapitalChange = (e) => {
+    const inputVal = e.target.value;
+    const formatted = formatCurrencyInput(inputVal);
+    const raw = parseCurrency(formatted);
+    
+    setFormData({ ...formData, working_capital: raw });
+    setDisplayValue(formatted);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -52,19 +65,18 @@ const Onboarding = () => {
 
     setIsLoading(true);
     try {
-      // Use FormData to handle file upload
       const data = new FormData();
       data.append('businessName', formData.businessName);
       data.append('contact_email', formData.contact_email);
       data.append('contact_phone', formData.contact_phone);
       data.append('address', formData.address);
+      data.append('working_capital', formData.working_capital || 0);
       if (logoFile) {
         data.append('logo', logoFile);
       }
 
       await authService.updateBusinessProfile(data);
       
-      // Update local storage/state
       updateUser({ hasBusinessProfile: true });
       
       toast.success('Welcome aboard! Your business profile is ready.');
@@ -78,78 +90,100 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-dark-950 flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary-500/10 via-transparent to-transparent">
+    <div className="min-h-screen bg-slate-50 dark:bg-dark-950 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-primary-600/5 -skew-x-12 transform origin-top-right"></div>
+      
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-2xl relative z-10"
       >
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-600 text-white mb-6 shadow-lg shadow-primary-500/20">
-            <Building2 size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
-            Set up your Business
+          <motion.div 
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-primary-600 text-white mb-6 shadow-2xl shadow-primary-500/20"
+          >
+            <Building2 size={40} />
+          </motion.div>
+          <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-3">
+            Business Identity
           </h1>
-          <p className="text-slate-500 dark:text-gray-400 max-w-md mx-auto">
-            Welcome to Cryndol! Please provide your business details to customize your experience and documents.
+          <p className="text-slate-500 dark:text-gray-400 text-lg">
+            Let's customize your workspace and documents.
           </p>
         </div>
 
-        <Card className="border-none shadow-2xl shadow-slate-200/50 dark:shadow-none dark:bg-dark-900/50 backdrop-blur-xl border border-white/10">
-          <Card.Content className="pt-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Logo Upload Section */}
+        <Card className="border-none shadow-2xl dark:bg-dark-900/40 backdrop-blur-2xl border border-white/5 overflow-hidden">
+          <div className="h-2 bg-gradient-to-r from-primary-500 via-primary-600 to-emerald-500"></div>
+          <Card.Content className="p-8 lg:p-12">
+            <form onSubmit={handleSubmit} className="space-y-10">
+              {/* Logo Upload */}
               <div className="flex flex-col items-center">
                 <div className="relative group">
-                  <div className="w-32 h-32 rounded-3xl bg-slate-100 dark:bg-dark-800 border-2 border-dashed border-slate-300 dark:border-white/10 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary-500">
+                  <div className="w-36 h-36 rounded-[2.5rem] bg-slate-100 dark:bg-dark-800 border-2 border-dashed border-slate-200 dark:border-white/5 flex items-center justify-center overflow-hidden transition-all group-hover:border-primary-500 group-hover:bg-primary-500/5">
                     {logoPreview ? (
-                      <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain p-2" />
+                      <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-4" />
                     ) : (
-                      <div className="text-center p-4">
-                        <Upload size={24} className="mx-auto text-slate-400 mb-2" />
-                        <span className="text-xs text-slate-400 font-medium tracking-tight">upload logo</span>
+                      <div className="text-center">
+                        <Upload size={32} className="mx-auto text-slate-300 mb-2 group-hover:text-primary-500 transition-colors" />
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 group-hover:text-primary-500">Upload Logo</span>
                       </div>
                     )}
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoChange}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
+                  <input type="file" accept="image/*" onChange={handleLogoChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                   {logoPreview && (
-                    <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-1.5 rounded-full shadow-lg">
-                      <CheckCircle2 size={16} />
-                    </div>
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-2 rounded-2xl shadow-xl border-4 border-white dark:border-dark-900">
+                      <CheckCircle2 size={18} />
+                    </motion.div>
                   )}
                 </div>
-                <p className="mt-4 text-xs text-slate-500 dark:text-gray-400">
-                   Square PNG or JPG recommended (max 2MB)
-                </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <Input
                   label="Business Name"
                   name="businessName"
-                  placeholder="e.g. Felix Finance Ltd"
+                  placeholder="e.g. BlueSky Credits"
                   value={formData.businessName}
                   onChange={handleChange}
                   leftIcon={<Building2 size={18} />}
                   required
                 />
+                
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2.5 ml-1">
+                    Initial Working Capital
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute top-1/2 -translate-y-1/2 left-4 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                      <Wallet size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="0.00"
+                      value={displayValue}
+                      onChange={handleCapitalChange}
+                      className="block w-full rounded-2xl border-slate-200 dark:border-white/5 dark:bg-dark-800/50 bg-white pl-12 pr-16 py-3 text-slate-900 dark:text-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all text-sm font-semibold"
+                    />
+                    <div className="absolute top-1/2 -translate-y-1/2 right-4 text-xs font-bold text-slate-400 group-focus-within:text-primary-500">
+                      ZMW
+                    </div>
+                  </div>
+                </div>
+
                 <Input
-                  label="Contact Email"
+                  label="Business Email"
                   name="contact_email"
                   type="email"
-                  placeholder="business@example.com"
+                  placeholder="contact@business.com"
                   value={formData.contact_email}
                   onChange={handleChange}
                   leftIcon={<Mail size={18} />}
                 />
                 <Input
-                  label="Contact Phone"
+                  label="Business Phone"
                   name="contact_phone"
                   placeholder="+260..."
                   value={formData.contact_phone}
@@ -157,18 +191,18 @@ const Onboarding = () => {
                   leftIcon={<Phone size={18} />}
                 />
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2 pl-1">
-                    Physical Address
+                  <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2.5 ml-1">
+                    Headquarters Address
                   </label>
-                  <div className="relative">
-                    <div className="absolute top-3 left-3 text-slate-400 pointer-events-none">
-                      <MapPin size={18} />
+                  <div className="relative group">
+                    <div className="absolute top-3.5 left-4 text-slate-400 group-focus-within:text-primary-500 transition-colors">
+                      <MapPin size={20} />
                     </div>
                     <textarea
                       name="address"
                       rows="3"
-                      className="block w-full rounded-xl border-slate-200 dark:border-white/10 dark:bg-dark-800/50 bg-white pl-10 pr-4 py-2.5 text-slate-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 transition-all text-sm"
-                      placeholder="Street name, City, Country"
+                      className="block w-full rounded-2xl border-slate-200 dark:border-white/5 dark:bg-dark-800/50 bg-white pl-12 pr-4 py-3 text-slate-900 dark:text-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all text-sm resize-none"
+                      placeholder="Enter street, city, and country..."
                       value={formData.address}
                       onChange={handleChange}
                     ></textarea>
@@ -176,19 +210,19 @@ const Onboarding = () => {
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-6">
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-full py-6 text-lg rounded-2xl shadow-xl shadow-primary-500/20"
+                  className="w-full py-7 text-lg font-bold rounded-[2rem] shadow-2xl shadow-primary-500/30"
                   isLoading={isLoading}
-                  rightIcon={<ArrowRight size={20} />}
+                  rightIcon={<ArrowRight size={22} />}
                 >
-                  Complete Setup
+                  Launch Workspace
                 </Button>
-                <div className="text-center mt-6 text-xs text-slate-500 dark:text-gray-500 flex items-center justify-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   Setup only takes a minute
+                <div className="flex items-center justify-center gap-2 mt-8 text-slate-400 text-sm font-medium">
+                  <ShieldCheck size={16} className="text-emerald-500" />
+                  All data is encrypted and secure
                 </div>
               </div>
             </form>

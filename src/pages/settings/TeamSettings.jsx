@@ -5,12 +5,16 @@ import Input from '../../components/ui/Input';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { useConfirmation } from '../../context/ConfirmationContext';
+import PermissionsEditorModal from '../../components/modals/PermissionsEditorModal';
+import { ShieldAlert } from 'lucide-react';
 
 const TeamSettings = () => {
     const [team, setTeam] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showInvite, setShowInvite] = useState(false);
     const [inviteData, setInviteData] = useState({ fullName: '', email: '', role: 'loan_officer' });
+    const [selectedMember, setSelectedMember] = useState(null);
+    const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
     const { confirm } = useConfirmation();
 
     useEffect(() => {
@@ -59,6 +63,10 @@ const TeamSettings = () => {
             toast.error('Failed to remove member');
         }
     };
+    const handleEditPermissions = (member) => {
+        setSelectedMember(member);
+        setIsPermissionsModalOpen(true);
+    };
 
     return (
         <div className="space-y-6">
@@ -105,59 +113,119 @@ const TeamSettings = () => {
                 </form>
             )}
 
-            <div className="overflow-hidden bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg">
-                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                    <thead className="bg-slate-50 dark:bg-slate-800">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-700">
-                        {loading ? (
-                            <tr><td colSpan="4" className="text-center py-4">Loading...</td></tr>
-                        ) : team.map((member) => (
-                            <tr key={member.id}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                        <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
-                                            {member.fullName.charAt(0)}
-                                        </div>
-                                        <div className="ml-4">
-                                            <div className="text-sm font-medium text-slate-900 dark:text-white">{member.fullName}</div>
-                                            <div className="text-sm text-slate-500">{member.email}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        ${member.role?.toLowerCase() === 'super_admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
-                                          member.role?.toLowerCase() === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 
-                                          member.role?.toLowerCase() === 'loan_officer' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 
-                                          'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'} capitalize`}>
-                                        {member.role?.replace('_', ' ') || 'user'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                        Active
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    {member.role !== 'super_admin' && (
-                                        <button onClick={() => handleRemove(member.id)} className="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors">
-                                            Remove
-                                        </button>
-                                    )}
-                                </td>
+            <div className="space-y-4">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-hidden bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg">
+                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                        <thead className="bg-slate-50 dark:bg-slate-800">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Role</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-700">
+                            {loading ? (
+                                <tr><td colSpan="4" className="text-center py-4">Loading...</td></tr>
+                            ) : team.map((member) => (
+                                <tr key={member.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
+                                                {member.fullName.charAt(0)}
+                                            </div>
+                                            <div className="ml-4">
+                                                <div className="text-sm font-medium text-slate-900 dark:text-white">{member.fullName}</div>
+                                                <div className="text-sm text-slate-500">{member.email}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            ${member.role?.toLowerCase() === 'super_admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                                              member.role?.toLowerCase() === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 
+                                              member.role?.toLowerCase() === 'loan_officer' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 
+                                              'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'} capitalize`}>
+                                            {member.role?.replace('_', ' ') || 'user'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                            Active
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button 
+                                                onClick={() => handleEditPermissions(member)} 
+                                                className="text-primary-500 hover:text-primary-700 bg-primary-50 dark:bg-primary-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                                            >
+                                                <Shield size={14} />
+                                                Permissions
+                                            </button>
+                                            {member.role !== 'SUPER_ADMIN' && member.role !== 'super_admin' && (
+                                                <button onClick={() => handleRemove(member.id)} className="text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors">
+                                                    Remove
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                    {loading ? (
+                        <div className="text-center py-4">Loading...</div>
+                    ) : team.map((member) => (
+                        <div key={member.id} className="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold flex-shrink-0">
+                                        {member.fullName.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-medium text-slate-900 dark:text-white leading-tight">{member.fullName}</div>
+                                        <div className="text-xs text-slate-500 leading-tight">{member.email}</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                    Active
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mt-1">
+                                <span className={`px-2.5 py-1 inline-flex text-[10px] font-semibold rounded-md 
+                                    ${member.role?.toLowerCase() === 'super_admin' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' :
+                                      member.role?.toLowerCase() === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 
+                                      member.role?.toLowerCase() === 'loan_officer' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' : 
+                                      'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'} uppercase tracking-wider`}>
+                                    {member.role?.replace('_', ' ') || 'user'}
+                                </span>
+                                
+                                {member.role !== 'super_admin' && (
+                                    <button onClick={() => handleRemove(member.id)} className="text-xs font-medium text-red-500 hover:text-red-700 bg-red-50 dark:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors">
+                                        Remove Member
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
+            
+            <PermissionsEditorModal 
+                isOpen={isPermissionsModalOpen}
+                onClose={() => setIsPermissionsModalOpen(false)}
+                member={selectedMember}
+                onSuccess={fetchTeam}
+            />
         </div>
     );
 };

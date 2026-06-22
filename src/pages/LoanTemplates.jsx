@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Edit, Trash2, BookOpen } from 'lucide-react';
+import {
+  Settings, Zap, TrendingDown, CheckCircle2, XCircle,
+  DollarSign, Percent, Info
+} from 'lucide-react';
 import Header from '../components/layout/Header';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
 import LoanTemplateModal from '../components/modals/LoanTemplateModal';
 import loanTemplateService from '../services/loanTemplate.service';
 import toast from 'react-hot-toast';
-import { useConfirmation } from '../context/ConfirmationContext';
+import { formatCurrency } from '../utils/formatters';
 
 const LoanTemplates = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]     = useState(true);
   const [editingTemplate, setEditingTemplate] = useState(null);
-  const { confirm } = useConfirmation();
 
   useEffect(() => {
     fetchTemplates();
@@ -26,7 +25,8 @@ const LoanTemplates = () => {
     try {
       setLoading(true);
       const response = await loanTemplateService.getTemplates();
-      setTemplates(response.data?.data || []);
+      const data = response.data?.data || [];
+      setTemplates(data);
     } catch (error) {
       console.error('Failed to fetch loan templates:', error);
       toast.error('Failed to load loan templates');
@@ -35,170 +35,230 @@ const LoanTemplates = () => {
     }
   };
 
-  const handleEdit = (template) => {
-    setEditingTemplate(template);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    const isConfirmed = await confirm({
-      title: 'Deactivate Template',
-      message: 'Are you sure you want to deactivate this loan template?',
-      confirmText: 'Deactivate',
-      type: 'danger'
-    });
-
-    if (!isConfirmed) return;
-
+  const toggleStatus = async (template) => {
     try {
-      await loanTemplateService.deleteTemplate(id);
-      toast.success('Template deactivated successfully');
+      const newStatus = !template.is_active;
+      await loanTemplateService.configureTemplate(template.id, { is_active: newStatus });
+      toast.success(`${template.name} ${newStatus ? 'activated' : 'deactivated'}`);
       fetchTemplates();
     } catch (error) {
-      console.error('Failed to delete template:', error);
-      toast.error('Failed to deactivate template');
+      console.error('Failed to toggle template status:', error);
+      toast.error('Failed to update template status');
     }
   };
 
-  const closeModal = () => {
-    setEditingTemplate(null);
-    setIsModalOpen(false);
-  };
-
-  const filteredTemplates = templates.filter(template =>
-    template.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const flatRate  = templates.find(t => t.template_type === 'flat_rate');
+  const smartLoan = templates.find(t => t.template_type === 'smart_loan');
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Header title="Loan Templates" />
 
-      <div>
-        <Card>
-          <Card.Header>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <Card.Title className="text-xl sm:text-2xl">Lending Templates</Card.Title>
-                <Card.Description>Configure your standard loan terms and conditions</Card.Description>
-              </div>
-              <Button 
-                variant="primary" 
-                leftIcon={<Plus size={18} />} 
-                onClick={() => setIsModalOpen(true)}
-                className="w-full sm:w-auto"
-              >
-                Add Template
-              </Button>
-            </div>
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Lending Products</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Configure your two lending products below. Toggle them active or inactive at any time.
+          </p>
+        </div>
 
-            {/* Search */}
-            <div className="mt-4">
-              <Input
-                placeholder="Search templates..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                leftIcon={<Search size={18} />}
-              />
-            </div>
-          </Card.Header>
-
-          <Card.Content>
-            {loading ? (
-              <div className="py-12 text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
-                <p className="mt-4 text-slate-600 dark:text-gray-400">Loading templates...</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-white/10">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Name</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Interest</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Term</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Amount (Min-Max)</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Status</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTemplates.length > 0 ? (
-                      filteredTemplates.map((template, index) => (
-                        <motion.tr
-                          key={template.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                        >
-                          <td className="py-3 px-4 text-sm text-slate-900 dark:text-gray-200 font-medium">
-                            {template.name}
-                            <div className="text-xs text-slate-500 font-normal">{template.interest_type.toLowerCase().replace('_', ' ')}</div>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
-                            {template.interest_rate}%
-                          </td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
-                            {template.default_term} {template.term_unit}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
-                            {parseFloat(template.min_amount).toLocaleString()} - {parseFloat(template.max_amount).toLocaleString()}
-                          </td>
-                          <td className="py-3 px-4 text-sm">
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${template.is_active
-                              ? 'bg-emerald-500/10 text-emerald-500'
-                              : 'bg-slate-500/10 text-slate-500'
-                              }`}>
-                              {template.is_active ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center justify-end space-x-2">
-                              <button
-                                className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-emerald-500 rounded-lg transition-colors"
-                                onClick={() => handleEdit(template)}
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                className="p-2 hover:bg-red-500/10 text-red-400 rounded-lg transition-colors"
-                                onClick={() => handleDelete(template.id)}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </motion.tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="py-12 text-center">
-                          <div className="text-slate-400 dark:text-gray-500">
-                            <BookOpen size={48} className="mx-auto mb-4 opacity-20" />
-                            <p className="text-lg mb-2">No templates found</p>
-                            <p className="text-sm">Get started by creating a new loan template</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card.Content>
-        </Card>
+        {loading ? (
+          <div className="py-20 text-center">
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-500 mb-4" />
+            <p className="text-slate-500 dark:text-slate-400">Loading templates...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TemplateCard
+              template={flatRate}
+              type="flat_rate"
+              onConfigure={setEditingTemplate}
+              onToggleStatus={() => toggleStatus(flatRate)}
+            />
+            <TemplateCard
+              template={smartLoan}
+              type="smart_loan"
+              onConfigure={setEditingTemplate}
+              onToggleStatus={() => toggleStatus(smartLoan)}
+            />
+          </div>
+        )}
       </div>
 
       <LoanTemplateModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
+        isOpen={!!editingTemplate}
+        onClose={() => setEditingTemplate(null)}
         template={editingTemplate}
         onSuccess={() => {
-          closeModal();
+          setEditingTemplate(null);
           fetchTemplates();
         }}
       />
     </div>
+  );
+};
+
+// ─── Template Card ─────────────────────────────────────────────────────────────
+
+const TemplateCard = ({ template, type, onConfigure, onToggleStatus }) => {
+  const isFlatRate = type === 'flat_rate';
+
+  const meta = isFlatRate
+    ? {
+        icon:        <Zap size={28} className="text-amber-500" />,
+        iconBg:      'bg-amber-500/10 dark:bg-amber-500/15',
+        accentColor: 'border-amber-400/30 dark:border-amber-500/20',
+        badgeBg:     'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400',
+        label:       'Flat Rate',
+        tagline:     'Simple interest charged at a fixed rate per period',
+        gradient:    'from-amber-500/5 to-orange-500/5',
+      }
+    : {
+        icon:        <TrendingDown size={28} className="text-blue-500" />,
+        iconBg:      'bg-blue-500/10 dark:bg-blue-500/15',
+        accentColor: 'border-blue-400/30 dark:border-blue-500/20',
+        badgeBg:     'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400',
+        label:       'Smart Loan',
+        tagline:     'Bank-style reducing balance with monthly amortization',
+        gradient:    'from-blue-500/5 to-indigo-500/5',
+      };
+
+  if (!template) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`relative bg-gradient-to-br ${meta.gradient} rounded-3xl border ${meta.accentColor} p-6 flex items-center justify-center min-h-64`}
+      >
+        <div className="text-center text-slate-400">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-slate-300 mb-3" />
+          <p className="text-sm">Initializing...</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  const isActive = !!template.is_active;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`relative bg-gradient-to-br ${meta.gradient} rounded-3xl border ${meta.accentColor} overflow-hidden`}
+    >
+      {/* Active indicator strip */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${isActive ? (isFlatRate ? 'bg-amber-400' : 'bg-blue-400') : 'bg-slate-300 dark:bg-slate-700'}`} />
+
+      <div className="p-6 space-y-5">
+        {/* Header row */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-2xl ${meta.iconBg}`}>
+              {meta.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{meta.label}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{meta.tagline}</p>
+            </div>
+          </div>
+          <button 
+            onClick={onToggleStatus}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 active:scale-95 ${isActive ? meta.badgeBg : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}
+          >
+            {isActive
+              ? <><CheckCircle2 size={12} /> Active</>
+              : <><XCircle size={12} /> Inactive</>
+            }
+          </button>
+        </div>
+
+        {/* Rates / Info */}
+        <div className="bg-white/60 dark:bg-slate-900/40 rounded-2xl border border-white/80 dark:border-white/5 p-4">
+          {isFlatRate ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {[
+                { label: 'Per Day',     value: template.rate_per_day    },
+                { label: 'Per Week',    value: template.rate_per_week   },
+                { label: 'Per 2 Weeks', value: template.rate_per_2weeks },
+                { label: 'Per 3 Weeks', value: template.rate_per_3weeks },
+                { label: 'Per Month',   value: template.rate_per_month  },
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+                    {parseFloat(value || 0).toFixed(2)}
+                    <span className="text-xs font-normal text-slate-500">%</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Annual Interest Rate</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+                  {parseFloat(template.interest_rate || 0).toFixed(2)}
+                  <span className="text-sm font-normal text-slate-500">% p.a.</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  ≈ {(parseFloat(template.interest_rate || 0) / 12).toFixed(3)}% / month
+                </p>
+              </div>
+              <div className="opacity-10">
+                <TrendingDown size={60} className="text-blue-500" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Loan limits */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/60 dark:bg-slate-900/40 rounded-xl border border-white/80 dark:border-white/5 p-3">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Min Loan</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
+              {formatCurrency(parseFloat(template.min_amount || 0))}
+            </p>
+          </div>
+          <div className="bg-white/60 dark:bg-slate-900/40 rounded-xl border border-white/80 dark:border-white/5 p-3">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Max Loan</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">
+              {formatCurrency(parseFloat(template.max_amount || 0))}
+            </p>
+          </div>
+        </div>
+
+        {/* Fees row */}
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span>
+            Processing fee: <span className="font-semibold text-slate-700 dark:text-slate-300">
+              {template.processing_fee_type === 'percentage'
+                ? `${template.processing_fee_value}%`
+                : formatCurrency(parseFloat(template.processing_fee_value || 0))
+              }
+            </span>
+          </span>
+          <span>
+            Late penalty: <span className="font-semibold text-slate-700 dark:text-slate-300">
+              {template.late_penalty_type === 'percentage'
+                ? `${template.late_penalty_value}%`
+                : formatCurrency(parseFloat(template.late_penalty_value || 0))
+              }
+              <span className="text-slate-400 font-normal"> ({template.late_penalty_frequency})</span>
+            </span>
+          </span>
+        </div>
+
+        {/* Configure button */}
+        <Button
+          variant="ghost"
+          onClick={() => onConfigure(template)}
+          leftIcon={<Settings size={16} />}
+          className="w-full border border-slate-200 dark:border-white/10 hover:border-emerald-500 dark:hover:border-emerald-500"
+        >
+          Configure
+        </Button>
+      </div>
+    </motion.div>
   );
 };
 

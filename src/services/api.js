@@ -32,10 +32,11 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
+
     const originalRequest = error.config;
 
     // Handle 401 Unauthorized
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/login' && error.response.data.message !== 'Invalid credentials')) {
       originalRequest._retry = true;
 
       // Try to refresh token

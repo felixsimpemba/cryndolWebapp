@@ -352,7 +352,7 @@ const CustomerModal = ({ isOpen, onClose, onSuccess, customer }) => {
                         <Input label="Date of Birth" name="date_of_birth" type="date" value={formData.date_of_birth} onChange={handleChange} error={errors.date_of_birth} />
                         <Input label="Occupation" name="occupation" value={formData.occupation} onChange={handleChange} error={errors.occupation} />
                         <div className="md:col-span-2">
-                          <Input label="Annual Income" name="annual_income" type="number" value={formData.annual_income} onChange={handleChange} error={errors.annual_income} />
+                          <Input label="Monthly Income" name="annual_income" type="number" value={formData.annual_income} onChange={handleChange} error={errors.annual_income} />
                         </div>
                       </div>
                     )}

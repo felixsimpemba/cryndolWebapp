@@ -115,55 +115,106 @@ const Accounting = () => {
                 </div>
 
                 {/* Ledger Table */}
-                <Card className="overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10">
-                                <tr>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Date</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Description</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Account</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Type</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500 text-right">Amount</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                {transactions.map((tx) => (
-                                    <tr key={tx.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
-                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">{formatDate(tx.date)}</td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{tx.description}</p>
-                                            <p className="text-[10px] text-slate-400 uppercase tracking-tighter mt-0.5">REF: TX-0012920{tx.id}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{tx.account}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                {tx.type === 'debit' ? (
-                                                    <div className="p-1 rounded bg-blue-500/10 text-blue-500"><ArrowDownLeft size={14} /></div>
-                                                ) : (
-                                                    <div className="p-1 rounded bg-amber-500/10 text-amber-500"><ArrowUpRight size={14} /></div>
-                                                )}
-                                                <span className="text-xs font-bold uppercase tracking-tighter">{tx.type}</span>
-                                            </div>
-                                        </td>
-                                        <td className={`px-6 py-4 text-right font-black ${tx.type === 'debit' ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
-                                            {tx.type === 'debit' ? '+' : '-'} {formatCurrency(tx.amount)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={cn(
-                                                "px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                                                tx.status === 'Completed' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
-                                            )}>
-                                                {tx.status}
-                                            </span>
-                                        </td>
+                <div className="space-y-4">
+                    {/* Desktop Table */}
+                    <Card className="hidden md:block overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50 dark:bg-white/5 border-b border-slate-200 dark:border-white/10">
+                                    <tr>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Date</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Description</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Account</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Type</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500 text-right">Amount</th>
+                                        <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-slate-500">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                                    {transactions.map((tx) => (
+                                        <tr key={tx.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
+                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">{formatDate(tx.date)}</td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{tx.description}</p>
+                                                <p className="text-[10px] text-slate-400 uppercase tracking-tighter mt-0.5">REF: TX-0012920{tx.id}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300 font-medium">{tx.account}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    {tx.type === 'debit' ? (
+                                                        <div className="p-1 rounded bg-blue-500/10 text-blue-500"><ArrowDownLeft size={14} /></div>
+                                                    ) : (
+                                                        <div className="p-1 rounded bg-amber-500/10 text-amber-500"><ArrowUpRight size={14} /></div>
+                                                    )}
+                                                    <span className="text-xs font-bold uppercase tracking-tighter">{tx.type}</span>
+                                                </div>
+                                            </td>
+                                            <td className={`px-6 py-4 text-right font-black ${tx.type === 'debit' ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
+                                                {tx.type === 'debit' ? '+' : '-'} {formatCurrency(tx.amount)}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={cn(
+                                                    "px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                    tx.status === 'Completed' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                                                )}>
+                                                    {tx.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+
+                    {/* Mobile Cards */}
+                    <div className="grid grid-cols-1 gap-4 md:hidden">
+                        {transactions.map((tx) => (
+                            <motion.div
+                                key={tx.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-white/5 shadow-sm"
+                            >
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{tx.description}</p>
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-tighter mt-1">REF: TX-0012920{tx.id}</p>
+                                    </div>
+                                    <span className={cn(
+                                        "px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap ml-2",
+                                        tx.status === 'Completed' ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"
+                                    )}>
+                                        {tx.status}
+                                    </span>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-y-3 text-sm border-t border-slate-50 dark:border-white/5 pt-3">
+                                    <div className="text-slate-500 dark:text-gray-400">Date</div>
+                                    <div className="text-right text-slate-900 dark:text-gray-300 font-medium">{formatDate(tx.date)}</div>
+                                    
+                                    <div className="text-slate-500 dark:text-gray-400">Account</div>
+                                    <div className="text-right text-slate-900 dark:text-gray-300 font-medium">{tx.account}</div>
+
+                                    <div className="text-slate-500 dark:text-gray-400">Type</div>
+                                    <div className="flex items-center justify-end gap-1.5">
+                                        {tx.type === 'debit' ? (
+                                            <div className="p-0.5 rounded bg-blue-500/10 text-blue-500"><ArrowDownLeft size={12} /></div>
+                                        ) : (
+                                            <div className="p-0.5 rounded bg-amber-500/10 text-amber-500"><ArrowUpRight size={12} /></div>
+                                        )}
+                                        <span className="text-xs font-bold uppercase tracking-tighter text-slate-700 dark:text-gray-300">{tx.type}</span>
+                                    </div>
+                                    
+                                    <div className="text-slate-500 dark:text-gray-400">Amount</div>
+                                    <div className={`text-right font-black ${tx.type === 'debit' ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
+                                        {tx.type === 'debit' ? '+' : '-'} {formatCurrency(tx.amount)}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
-                </Card>
+                </div>
             </div>
         </div>
     );

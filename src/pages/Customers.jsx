@@ -111,82 +111,142 @@ const Customers = () => {
                 <p className="mt-4 text-slate-600 dark:text-gray-400">Loading customers...</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-white/10">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Name</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Email</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Phone</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Joined</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCustomers.length > 0 ? (
-                      filteredCustomers.map((customer, index) => (
-                        <motion.tr
-                          key={customer.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                          onClick={() => navigate(`/app/customers/${customer.id}`)}
-                        >
-                          <td className="py-3 px-4 text-sm text-slate-900 dark:text-gray-200 font-medium">
-                            {customer.first_name + ' ' + (customer.last_name || '')}
-                          </td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.email}</td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.phone}</td>
-                          <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
-                            {formatDate(customer.created_at)}
-                          </td>
-                          <td className="py-3 px-4">
-                                <button
-                                  className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/app/customers/${customer.id}`);
-                                  }}
-                                  title="View Details"
-                                >
-                                  <Eye size={16} />
-                                </button>
-                                <button
-                                  className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEdit(customer);
-                                  }}
-                                  title="Edit"
-                                >
-                                  <Edit size={16} />
-                                </button>
-                                <button
-                                  className="p-2 hover:bg-red-500/10 text-red-400 rounded-lg transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(customer.id);
-                                  }}
-                                  title="Delete"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                          </td>
-                        </motion.tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="py-12 text-center">
-                          <div className="text-slate-400 dark:text-gray-500">
-                            <p className="text-lg mb-2">No customers found</p>
-                            <p className="text-sm">Try adjusting your search criteria or add a new customer</p>
-                          </div>
-                        </td>
+              <div className="space-y-4">
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-white/10">
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Name</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Email</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Phone</th>
+                        <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Joined</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-slate-600 dark:text-gray-300">Actions</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredCustomers.length > 0 ? (
+                        filteredCustomers.map((customer, index) => (
+                          <motion.tr
+                            key={customer.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/app/customers/${customer.id}`)}
+                          >
+                            <td className="py-3 px-4 text-sm text-slate-900 dark:text-gray-200 font-medium">
+                              {customer.first_name + ' ' + (customer.last_name || '')}
+                            </td>
+                            <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.email}</td>
+                            <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">{customer.phone}</td>
+                            <td className="py-3 px-4 text-sm text-slate-500 dark:text-gray-400">
+                              {formatDate(customer.created_at)}
+                            </td>
+                            <td className="py-3 px-4">
+                                  <button
+                                    className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/app/customers/${customer.id}`);
+                                    }}
+                                    title="View Details"
+                                  >
+                                    <Eye size={16} />
+                                  </button>
+                                  <button
+                                    className="p-2 hover:bg-slate-500/10 text-slate-500 hover:text-primary-500 rounded-lg transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(customer);
+                                    }}
+                                    title="Edit"
+                                  >
+                                    <Edit size={16} />
+                                  </button>
+                                  <button
+                                    className="p-2 hover:bg-red-500/10 text-red-400 rounded-lg transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(customer.id);
+                                    }}
+                                    title="Delete"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                            </td>
+                          </motion.tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5" className="py-12 text-center">
+                            <div className="text-slate-400 dark:text-gray-500">
+                              <p className="text-lg mb-2">No customers found</p>
+                              <p className="text-sm">Try adjusting your search criteria or add a new customer</p>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Mobile Cards */}
+                <div className="grid grid-cols-1 gap-4 md:hidden">
+                  {filteredCustomers.length > 0 ? (
+                    filteredCustomers.map((customer, index) => (
+                      <motion.div
+                        key={customer.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-white/5 space-y-3 cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => navigate(`/app/customers/${customer.id}`)}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="font-medium text-slate-900 dark:text-white text-lg">
+                            {customer.first_name + ' ' + (customer.last_name || '')}
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              className="p-1.5 text-slate-500 hover:text-primary-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(customer);
+                              }}
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(customer.id);
+                              }}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-y-2 text-sm">
+                          <div className="text-slate-500 dark:text-gray-400">Email</div>
+                          <div className="text-right text-slate-900 dark:text-gray-200 truncate">{customer.email}</div>
+                          
+                          <div className="text-slate-500 dark:text-gray-400">Phone</div>
+                          <div className="text-right text-slate-900 dark:text-gray-200">{customer.phone}</div>
+                          
+                          <div className="text-slate-500 dark:text-gray-400">Joined</div>
+                          <div className="text-right text-slate-900 dark:text-gray-200">{formatDate(customer.created_at)}</div>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="py-12 text-center text-slate-400 dark:text-gray-500 border border-slate-100 dark:border-white/5 rounded-xl">
+                      <p className="text-lg mb-2">No customers found</p>
+                      <p className="text-sm">Try adjusting your search criteria or add a new customer</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </Card.Content>
